@@ -22,8 +22,10 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 public class ManipulaCorpus {
 
-	public static LinkedHashSet<Regra> REGRAS = new LinkedHashSet<Regra>();
-	public static ArrayList<ArrayList<Regra>> SENTENCAS = new ArrayList<ArrayList<Regra>>();
+	public static LinkedHashMap<String, LinkedHashSet<Regra>> gramatica = new LinkedHashMap<String, LinkedHashSet<Regra>>();
+	public static LinkedHashSet<Regra> regras = new LinkedHashSet<Regra>();
+	public static LinkedHashSet<String> lexico = new LinkedHashSet<String>();
+	public static ArrayList<ArrayList<Regra>> sentencas = new ArrayList<ArrayList<Regra>>();
 	
 	public static void extrairRegrasESentenca(){
 		try {
@@ -34,18 +36,29 @@ public class ManipulaCorpus {
 			// varre os caracteres do corpus criando uma árvore para cada sentença
 			ArrayList<DefaultMutableTreeNode> listaArvoresSintaticas = converterCorpusEmArvore(sb);
 
-			// lista com árvores sintáticas inconsistentes
+			// lista com árvores sintáticas inconsistentes (sujeira do corpus, eg. VB -> VB terminal)
 			LinkedHashSet<DefaultMutableTreeNode> listaArvoresInconsistentes = new LinkedHashSet<DefaultMutableTreeNode>();
 
 			// elimina regras redundantes mantendo a ordem de inserção das regras
-			REGRAS = removerRedundancia(listaArvoresSintaticas, listaArvoresInconsistentes);
+			regras = removerRedundancia(listaArvoresSintaticas, listaArvoresInconsistentes);
 
+			// elimina árvores sintáticas inconsistentes
 			for (DefaultMutableTreeNode df : listaArvoresInconsistentes) {
 				listaArvoresSintaticas.remove(df);
 			}
-			
-			// agrupa as sentencas em uma lista de regras do tipo Lexico
-			SENTENCAS = extrairSentencas(listaArvoresSintaticas);
+
+			// constroi gramática a partir do conjunto de regras tratadas
+		   	for (Regra r : regras) {
+				String cabeca = r.variavel;
+				if(gramatica.containsKey(cabeca)){
+					gramatica.get(cabeca).add(r);
+				}else{
+					gramatica.put(cabeca, new LinkedHashSet<Regra>());	
+				}
+		    }
+
+		   	// agrupa as sentencas em uma lista de regras do tipo Lexico
+			sentencas = extrairSentencas(listaArvoresSintaticas);
 			
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -61,7 +74,7 @@ public class ManipulaCorpus {
 			// varre os caracteres do corpus criando uma árvore para cada sentença
 			ArrayList<DefaultMutableTreeNode> listaArvoresSintaticas = converterCorpusEmArvore(sb);
 
-			// lista com árvores sintáticas inconsistentes
+			// lista com árvores sintáticas inconsistentes (sujeira do corpus, eg. VB -> VB terminal)
 			LinkedHashSet<DefaultMutableTreeNode> listaArvoresInconsistentes = new LinkedHashSet<DefaultMutableTreeNode>();
 
 			// elimina regras redundantes mantendo a ordem de inserção das regras
@@ -90,7 +103,8 @@ public class ManipulaCorpus {
 	/**
 	 * Agrupa regras em um conjunto, onde a chave é a variavel mais a esquerda, 
 	 * os valores são todas as regras que iniciam com a chave,
-	 * respeitando a ordem de inserção e eliminando regras redundantes
+	 * respeitando a ordem de inserção, eliminando regras redundantes 
+	 * e inconsistentes (sujeira do corpus, eg. VB -> VB terminal)
 	 */
 	private static LinkedHashSet<Regra>  removerRedundancia(ArrayList<DefaultMutableTreeNode> listaArvoresSintaticas, LinkedHashSet<DefaultMutableTreeNode> listaArvoresInconsistentes) {
 		LinkedHashSet<Regra> conjuntoRegrasSemRepeticao = new LinkedHashSet<Regra>();
@@ -109,9 +123,11 @@ public class ManipulaCorpus {
 		    while(!aux.isEmpty()){
         	    Regra regra = aux.pop();
 		    	insconsistencia = identificarIncosistencia(conjuntoRegrasSemRepeticao, regra); 
-			    if(!insconsistencia)
+			    if(!insconsistencia){
 			    	conjuntoRegrasSemRepeticao.add(regra);
-			    else
+			    	if(regra.tipo == Regra.LEXICO)
+			    		lexico.add(regra.direita.get(0).valor);
+			    }else
 			    	listaArvoresInconsistentes.add(df);				    	
 			}
 		}
@@ -146,6 +162,7 @@ public class ManipulaCorpus {
 	
 	/**
 	 * converte uma arvore de regras passada como parametro para uma pilha de regras (mantendo a ordem delas)
+	 * elimina regras do tipo S -> S
 	 */
     private static Stack<Regra> converteArvoreParaPilha(DefaultMutableTreeNode raiz, Stack<Regra> regras) {
     	String noPai = raiz.toString();
