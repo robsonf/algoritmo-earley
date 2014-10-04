@@ -1,2 +1,1 @@
-Implementação do Algoritmo de Earley
-teste
+Implementação do Algoritmo de Earley na linguagem Java

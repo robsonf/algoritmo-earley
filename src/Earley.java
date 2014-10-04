@@ -1,8 +1,7 @@
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.Queue;
 
 /*
  * Um estado no algorítimo é composto de três partes: A regra sendo
@@ -35,15 +34,11 @@ public class Earley {
 	
 	public class Estado{
 		Regra regra;
-		String elemento;
-		int linha;
-		int coluna;
-		public Estado(Regra regra, String elemento, int linha, int coluna) {
+		int elemento;
+		public Estado(Regra regra, int elemento) {
 			super();
 			this.regra = regra;
 			this.elemento = elemento;
-			this.linha = linha;
-			this.coluna = coluna;
 		}
 	}
 	
@@ -67,19 +62,34 @@ public class Earley {
 		lexico = ManipulaCorpus.lexico;
 		sentencas = ManipulaCorpus.sentencas; 
 
-		for (ArrayList<Regra> listaRegras: sentencas) {
-			int i = 0;
-			for (int j = listaRegras.size()-1; j >= 0; j--) {
-				String palavra = listaRegras.get(j).direita.get(0).valor;
-				System.out.println(palavra + " "+ i);
-				earley(gramatica, palavra);
-				i++;
-			}
+		for (ArrayList<Regra> sentenca: sentencas) {
+				earley(gramatica, sentenca);
 		}
+
 	}
 	
-	public void earley(LinkedHashMap<String, LinkedHashSet<Regra>> gramatica, String palavra){
-		
+	public void earley(LinkedHashMap<String, LinkedHashSet<Regra>> gramatica, ArrayList<Regra> sentenca){
+		Regra novaRegra = new Regra(Regra.NAO_LEXICO, "S'");
+		Estado novoEstado = new Estado(novaRegra, 0);
+		gramatica.put("S'", new LinkedHashSet<Regra>());
+		gramatica.get("S'").add(novaRegra);
+		enfileirar(novoEstado, 0);
+
+		int j = 0;
+		for (int k = sentenca.size()-1; k >= 0; k--) {
+			String palavra = sentenca.get(k).direita.get(0).valor;
+
+			LinkedHashMap<Integer, Estado> estados = chart.estados;
+		    Iterator i = estados.keySet().iterator();
+		    while(i.hasNext()){
+		    	Integer linha = (Integer)i.next();
+		    	estados.get(linha);
+		    }
+			j++;
+		}
+
+
+
 	}
 	
 	public void enfileirar(Estado estado, int linha){
@@ -93,17 +103,16 @@ public class Earley {
 	public void predictor(Estado estado, int linha, int coluna){
 		if(gramatica.containsKey(estado.elemento)){
 			for(Regra regra : (LinkedHashSet<Regra>)gramatica.get(estado.elemento)){
-				if(regra.tipo == Regra.LEXICO){
-					Estado novoEstado = new Estado(regra, regra.direita.get(0).valor, coluna, coluna);
-					enfileirar(novoEstado, coluna);
-				}
+				Estado novoEstado = new Estado(regra, 0);
+				enfileirar(novoEstado, coluna);
 			}
 		}
 	}
 	
-	public void scanner(Estado estado){
+	public void scanner(Estado estado, int linha, int coluna){
 		if(lexico.contains(estado.elemento)){
-			
+			Estado novoEstado = new Estado(estado.regra, 0);
+			enfileirar(novoEstado, coluna);
 		}
 	}
 	
