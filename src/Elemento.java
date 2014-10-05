@@ -18,6 +18,11 @@ public class Elemento {
 	public static boolean eTerminal(String variavel) {
 		return variavel.equals(variavel.toLowerCase()) || (variavel.toUpperCase().equals(variavel.toLowerCase()));
 	}
+	
+	@Override
+	protected Object clone() throws CloneNotSupportedException {
+		return new Elemento(this.valor);
+	}
 
 	@Override
 	public String toString() {

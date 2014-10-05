@@ -34,6 +34,16 @@ public class Regra {
 	}
 
 	@Override
+	protected Object clone() throws CloneNotSupportedException {
+		Regra regra = new Regra(this.tipo, this.variavel);
+		ArrayList<Elemento> direitaClone = new ArrayList<Elemento>();
+		for (Elemento e : direita) {
+			direitaClone.add((Elemento)e.clone());
+		}
+		regra.direita = direitaClone;
+		return regra;
+	}
+	@Override
 	public String toString() {
 		if(direita != null)
 			return variavel + " -> " + direita.toString();

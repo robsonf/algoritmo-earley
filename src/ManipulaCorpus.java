@@ -53,10 +53,13 @@ public class ManipulaCorpus {
 				if(gramatica.containsKey(cabeca)){
 					gramatica.get(cabeca).add(r);
 				}else{
-					gramatica.put(cabeca, new LinkedHashSet<Regra>());	
+					LinkedHashSet<Regra> l = new LinkedHashSet<Regra>();
+					l.add(r);
+					gramatica.put(cabeca, l);	
 				}
 		    }
 
+		   	
 		   	// agrupa as sentencas em uma lista de regras do tipo Lexico
 			sentencas = extrairSentencas(listaArvoresSintaticas);
 			
