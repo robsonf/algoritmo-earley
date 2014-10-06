@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Queue;
@@ -30,7 +29,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Earley {
 
-	Chart chart = null;
+	ConcurrentLinkedQueue<Estado> [] chart = null;
 	LinkedHashSet<String> lexico = null;
 	public static LinkedHashMap<String, LinkedHashSet<Regra>> gramatica = null;
 	ArrayList<ArrayList<Regra>> sentencas = null;
@@ -41,7 +40,6 @@ public class Earley {
 		gramatica = ManipulaCorpus.gramatica;
 		lexico = ManipulaCorpus.lexico;
 		sentencas = ManipulaCorpus.sentencas; 
-		chart = new Chart();
 
 //		for (ArrayList<Regra> sentenca: sentencas) {
 //			parser(gramatica, sentenca);
@@ -52,86 +50,113 @@ public class Earley {
 	}
 	
 	public void parser(LinkedHashMap<String, LinkedHashSet<Regra>> gramatica, ArrayList<Regra> sentenca){
-		Regra novaRegra = new Regra(Regra.NAO_LEXICO, "S'");
-		novaRegra.adicionarElemento("S");
-		gramatica.put("S'", new LinkedHashSet<Regra>());
-		gramatica.get("S'").add(novaRegra);
-		Estado novoEstado = new Estado(novaRegra, 0, 0);
-
-		enfileirar(novoEstado, 0);
-
-		
-		ConcurrentHashMap<Integer, ConcurrentLinkedQueue<Estado>> tabela = chart.tabela;
-		for (int i = 1; i < sentenca.size(); i++) {
-			chart.tabela.put(new Integer(i), new ConcurrentLinkedQueue<Estado>());
+		// cria novas possições no chart, uma para cada palavra da sentenca
+		chart  = new ConcurrentLinkedQueue[sentenca.size()];
+		for (int i = 0; i < sentenca.size(); i++) {
+			chart[i] = new ConcurrentLinkedQueue<Estado>();
 		}
+
+		// adiciona estado S(0) ao chart
+		Regra novaRegra = new Regra(Regra.NAO_LEXICO, "S", "ST");
+		Estado novoEstado = new Estado(novaRegra, 0, 0);
+		enfileirar(novoEstado, chart[0]);
+
+		// adiciona nova regra S' na gramática
+//		gramatica.put("S'", new LinkedHashSet<Regra>());
+//		gramatica.get("S'").add(novaRegra);
 		
-		System.out.println("Chart: " + chart);
-		
+		// para cada palavra da sentenca
 		for (int i = 0, k = sentenca.size()-1; k >= 0; k--, i++) {
 			String palavra = sentenca.get(k).direita.get(0).valor;
 			// para cada linha do chart, verifica cada elemento de um estado
-			for(Queue<Estado> estados: tabela.values()){
-				for (Estado estado : estados) {
-					Elemento elemento = estado.regra.direita.get(estado.coluna);
-					// se proximo elemento do estado for não terminal
-					if(estado.incompleto && elemento.tipo == Elemento.NAO_TERMINAL){
-//						System.out.println("Chart ["+i+"]: "+estado.regra);
-						predictor(estado, i, estado.coluna);
-					}else if(estado.incompleto && elemento.tipo == Elemento.TERMINAL){
-						scanner(estado, i, estado.coluna);
-					}else{
-						completer(estado, i, estado.coluna);
+			ConcurrentLinkedQueue<Estado> estados = chart[i];
+			int j = 0;
+			for (Estado estado : estados) {
+				// se existe proximo elemento no estado 
+				if(estado.incompleto){
+					Elemento elemento = estado.getProximoElemento(j);
+					if(elemento != null){
+						if(elemento.tipo == Elemento.NAO_TERMINAL){
+							predictor(estado, i, j);
+						}
+					}
+					else if(estado.incompleto && elemento.tipo == Elemento.TERMINAL){
+						scanner(estado, i, j);
 					}
 				}
+				else{
+					completer(estado, j, j+1);
+				}
+				j++;
 			}
 		}
 
+		imprimirChart();
 	}
 	
-	public void enfileirar(Estado estado, int linha){
+	public void enfileirar(Estado estado, ConcurrentLinkedQueue<Estado> estados){
 		if(chart!=null){
-			if(chart.tabela.containsKey(new Integer(linha))){
-				if(!chart.tabela.get(new Integer(linha)).contains(estado))
-					chart.adicionarEstado(estado, linha);
+			if(!estados.contains(estado)){
+				try {
+					Estado e = (Estado)estado.clone();
+					estados.add(e);
+				} catch (CloneNotSupportedException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
 	
-	public void predictor(Estado estado, int linha, int coluna){
-		String elemento = estado.regra.direita.get(coluna).valor;
-		if(gramatica.containsKey(elemento)){
-			for(Regra regra : (LinkedHashSet<Regra>)gramatica.get(elemento)){
+	public void predictor(Estado estado, int i, int j){
+		Elemento elemento = estado.getProximoElemento(j);
+		if(gramatica.containsKey(elemento.valor)){
+			for(Regra regra : (LinkedHashSet<Regra>)gramatica.get(elemento.valor)){
+				System.out.println(gramatica);
 				if(regra.tipo == Regra.NAO_LEXICO){
-					Estado novoEstado = new Estado(regra, linha, coluna);
-					enfileirar(novoEstado, linha);
+					Estado novoEstado = new Estado(regra, j, j);
+					enfileirar(novoEstado, chart[j]);
 				}
 			}
 		}
 //		System.out.println("Predictor: " + chart);
 	}
 	
-	public void scanner(Estado estado, int linha, int coluna){
-		String elemento = estado.regra.direita.get(estado.linha).valor;
+	public void scanner(Estado estado, int i, int j){
+		String elemento = estado.regra.direita.get(estado.entrada).valor;
 		if(lexico.contains(elemento)){
 			for(Regra regra : (LinkedHashSet<Regra>)gramatica.get(elemento)){
 				if(regra.direita.get(0).valor.equals(elemento)){
-					Estado novoEstado = new Estado(regra, linha,coluna+1);
-					enfileirar(novoEstado, coluna+1);
+					Estado novoEstado = new Estado(regra, j,j+1);
+					enfileirar(novoEstado, chart[j+1]);
 				}
 			}
 		}
 //		System.out.println("Scanner: " + chart);
 	}
 	
-	public void completer(Estado estado, int linha, int coluna){
-		String elemento = estado.regra.direita.get(estado.linha).valor;
-		
-//		System.out.println("Completer: " + chart);
+	public void completer(Estado estado, int i, int j){
+		String elemento = estado.regra.direita.get(estado.entrada).valor;
+		System.out.println("E: "+elemento);
+		for(Estado estadoChart : chart[i]){
+			System.out.println("V: "+estado.regra.variavel);
+			if(estadoChart.incompleto && elemento.equals(estado.regra.variavel)){
+				estadoChart.ponto = j;
+				enfileirar(estadoChart, chart[j]);
+			}
+		}
 	}
 
 	public static void main(String[] args) {
 		new Earley();
 	}
 	
+	public void imprimirChart(){
+		String retorno = "";
+		if(chart!=null){
+			for (int i = 0; i < chart.length; i++) {
+				retorno += "Chart ["+ i + "] :\n"+ chart[i] + "\n";	
+			}
+		}
+		System.out.println(retorno+"\n");
+	}
 }

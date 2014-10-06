@@ -1,14 +1,13 @@
-S -> IP
-IP -> VB PP VIRG | CONJ VB IP PONT | VB NP | SR ADJP
-VIRG -> ,
-PP -> PX NP
-NP -> DX NX | DX IP
-NX -> vaidade
-DX -> a | o
-PX -> contra
-VB -> declamei | conseguir | pude
-PONT -> .
-ADJP -> ADJ
-ADJ -> anónimo
-SR -> ser
-CONJ -> nem
+S -> ST
+ST -> NP VP
+VP -> TV NP | IV | IV PP
+NP -> NOM | DET NOM
+NOM -> NX | NX SREL
+NX -> fish | soup | frog
+TV -> saw | ate
+SREL -> RELPRO VP
+IV -> fish | swim
+RELPRO -> that
+DET -> a | the
+PP -> PREP NP
+PREP -> in | for

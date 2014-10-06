@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -5,30 +6,19 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 abstract public class Teste {
 	public static void main(String[] args) {
 		
-		ConcurrentHashMap<Integer, ConcurrentLinkedQueue<Estado>> tabela = new ConcurrentHashMap<Integer, ConcurrentLinkedQueue<Estado>>();
-		System.out.println(tabela);
+		ConcurrentLinkedQueue<Estado> [] tabela = new ConcurrentLinkedQueue[2];
+		System.out.println(Arrays.toString(tabela));
 		
 		Regra novaRegra = new Regra(Regra.NAO_LEXICO, "S'");
 		novaRegra.adicionarElemento("S");
 		Estado novoEstado = new Estado(novaRegra, 0, 0);
 		ConcurrentLinkedQueue<Estado> novo = new ConcurrentLinkedQueue<Estado>();
 		novo.add(novoEstado);
-		tabela.put(new Integer(0), novo);
+		tabela[0] = novo;
 		
-		System.out.println(tabela);
+		System.out.println(Arrays.toString(tabela));
 		
 		// para cada linha do chart, verifica cada elemento de um estado
-		Iterator it = tabela.values().iterator();
-		int i = 1;
-		for(ConcurrentLinkedQueue<Estado> estados: tabela.values()){
-			for (Estado estado : estados) {
-				ConcurrentLinkedQueue<Estado> novaFila = new ConcurrentLinkedQueue<Estado>();
-				novo.add(estado);
-				tabela.put(new Integer(i), novaFila);
-			}
-		}
-		
-		System.out.println(tabela);
 		
 		
 //		CopyOnWriteArrayList<String> list = new CopyOnWriteArrayList<String>();

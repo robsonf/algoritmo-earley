@@ -1,0 +1,13 @@
+(IP                                                     
+	(VB Declamei)
+	(PP (P contra)
+	    (NP (D a)
+		(N vaidade)))
+	(, ,))
+(IP (CONJ nem)
+	(VB pude)
+	(IP (VB conseguir)
+		(NP (D o)
+			(IP (SR ser)
+				(ADJP (ADJ Anónimo)))))
+	(. .))
