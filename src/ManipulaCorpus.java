@@ -22,6 +22,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 public class ManipulaCorpus {
 
+	public static final String REGRA_INICIAL_CORPUS = "_S_CORPUS_";
 	public static LinkedHashMap<String, LinkedHashSet<Regra>> gramatica = new LinkedHashMap<String, LinkedHashSet<Regra>>();
 	public static LinkedHashSet<Regra> regras = new LinkedHashSet<Regra>();
 	public static LinkedHashSet<String> lexico = new LinkedHashSet<String>();
@@ -58,7 +59,6 @@ public class ManipulaCorpus {
 					gramatica.put(cabeca, l);	
 				}
 		    }
-
 		   	
 		   	// agrupa as sentencas em uma lista de regras do tipo Lexico
 			sentencas = extrairSentencas(listaArvoresSintaticas);
@@ -95,7 +95,7 @@ public class ManipulaCorpus {
 			ArrayList<String> listaGramaticaFinal = formatarRegras(conjuntoRegrasSemRepeticao);
 
 			// cria arquivo para persistir as regras em disco
-			salvarRegrasEmArquivo(listaGramaticaFinal);
+			salvarGramaticaEmArquivo(listaGramaticaFinal);
 
 	            
 		} catch (IOException e) {
@@ -113,9 +113,9 @@ public class ManipulaCorpus {
 		LinkedHashSet<Regra> conjuntoRegrasSemRepeticao = new LinkedHashSet<Regra>();
 
 		// cria nova regra inicial S
-		for(DefaultMutableTreeNode df : listaArvoresSintaticas){
-			conjuntoRegrasSemRepeticao.add(new Regra(Regra.NAO_LEXICO, "S", df.toString()));
-		}
+//		for(DefaultMutableTreeNode df : listaArvoresSintaticas){
+//			conjuntoRegrasSemRepeticao.add(new Regra(Regra.NAO_LEXICO, REGRA_INICIAL_CORPUS, df.toString()));
+//		}
 
 		// adiciona as regras em um conjunto (conjuntoRegras), para eliminar regras repetidas
 		for (DefaultMutableTreeNode df : listaArvoresSintaticas) {
@@ -276,7 +276,7 @@ public class ManipulaCorpus {
 		return listaGramaticaFinal;
 	}
 
-	private static void salvarRegrasEmArquivo(
+	private static void salvarGramaticaEmArquivo(
 			ArrayList<String> listaGramaticaFinal) throws IOException {
 		// escreve regras no arquivo regras.txt
 		BufferedWriter bw = new BufferedWriter(new FileWriter("regras.txt"));

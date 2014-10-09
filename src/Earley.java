@@ -29,7 +29,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Earley {
 
-	ConcurrentLinkedQueue<Estado> [] chart = null;
+	public static final String REGRA_INICIAL = "_S_EARLEY_";
+	ArrayList<Estado> [] chart = null;
 	LinkedHashSet<String> lexico = null;
 	public static LinkedHashMap<String, LinkedHashSet<Regra>> gramatica = null;
 	ArrayList<ArrayList<Regra>> sentencas = null;
@@ -51,41 +52,37 @@ public class Earley {
 	
 	public void parser(LinkedHashMap<String, LinkedHashSet<Regra>> gramatica, ArrayList<Regra> sentenca){
 		// cria novas possições no chart, uma para cada palavra da sentenca
-		chart  = new ConcurrentLinkedQueue[sentenca.size()];
-		for (int i = 0; i < sentenca.size(); i++) {
-			chart[i] = new ConcurrentLinkedQueue<Estado>();
+		chart  = new ArrayList[sentenca.size()+1];
+		for (int i = 0; i < sentenca.size()+1; i++) {
+			chart[i] = new ArrayList<Estado>();
 		}
 
 		// adiciona estado S(0) ao chart
-		Regra novaRegra = new Regra(Regra.NAO_LEXICO, "S", "ST");
-		Estado novoEstado = new Estado(novaRegra, 0, 0);
+		Regra novaRegra = new Regra(Regra.NAO_LEXICO, REGRA_INICIAL, ManipulaCorpus.REGRA_INICIAL_CORPUS);
+		Estado novoEstado = new Estado(novaRegra, 0, 0, "Dummy start state");
 		enfileirar(novoEstado, chart[0]);
 
-		// adiciona nova regra S' na gramática
-//		gramatica.put("S'", new LinkedHashSet<Regra>());
-//		gramatica.get("S'").add(novaRegra);
-		
 		// para cada palavra da sentenca
-		for (int i = 0, k = sentenca.size()-1; k >= 0; k--, i++) {
-			String palavra = sentenca.get(k).direita.get(0).valor;
+		for (int i = 0, k = sentenca.size(); k >= 0; k--, i++) {
+			String palavra = null;
+			if(k!=sentenca.size())
+				palavra = sentenca.get(k).direita.get(0).valor;
 			// para cada linha do chart, verifica cada elemento de um estado
-			ConcurrentLinkedQueue<Estado> estados = chart[i];
+			ArrayList<Estado> estados = chart[i];
 			int j = 0;
-			for (Estado estado : estados) {
-				// se existe proximo elemento no estado 
-				if(estado.incompleto){
-					Elemento elemento = estado.getProximoElemento(j);
-					if(elemento != null){
-						if(elemento.tipo == Elemento.NAO_TERMINAL){
-							predictor(estado, i, j);
-						}
+			while(estados!=null && j < estados.size()){
+				Estado estado = estados.get(j);
+				// se existe proximo elemento no lado direito de um ponto
+				Elemento elemento = estado.getElemento();
+				if(estado.incompleto && elemento != null){
+					// elemento não é lexico
+					if(!lexico.contains(elemento)){
+						predictor(estado, i, j);
+					}else{
+						scanner(estado, i, j);							
 					}
-					else if(estado.incompleto && elemento.tipo == Elemento.TERMINAL){
-						scanner(estado, i, j);
-					}
-				}
-				else{
-					completer(estado, j, j+1);
+				}else{
+					completer(estado, i, j);
 				}
 				j++;
 			}
@@ -94,7 +91,7 @@ public class Earley {
 		imprimirChart();
 	}
 	
-	public void enfileirar(Estado estado, ConcurrentLinkedQueue<Estado> estados){
+	public void enfileirar(Estado estado, ArrayList<Estado> estados){
 		if(chart!=null){
 			if(!estados.contains(estado)){
 				try {
@@ -108,12 +105,11 @@ public class Earley {
 	}
 	
 	public void predictor(Estado estado, int i, int j){
-		Elemento elemento = estado.getProximoElemento(j);
+		Elemento elemento = estado.getElemento();
 		if(gramatica.containsKey(elemento.valor)){
 			for(Regra regra : (LinkedHashSet<Regra>)gramatica.get(elemento.valor)){
-				System.out.println(gramatica);
 				if(regra.tipo == Regra.NAO_LEXICO){
-					Estado novoEstado = new Estado(regra, j, j);
+					Estado novoEstado = new Estado(regra, estado.entrada, j, "Predictor");
 					enfileirar(novoEstado, chart[j]);
 				}
 			}
@@ -126,7 +122,7 @@ public class Earley {
 		if(lexico.contains(elemento)){
 			for(Regra regra : (LinkedHashSet<Regra>)gramatica.get(elemento)){
 				if(regra.direita.get(0).valor.equals(elemento)){
-					Estado novoEstado = new Estado(regra, j,j+1);
+					Estado novoEstado = new Estado(regra, j,j+1, "Scanner");
 					enfileirar(novoEstado, chart[j+1]);
 				}
 			}
@@ -134,14 +130,13 @@ public class Earley {
 //		System.out.println("Scanner: " + chart);
 	}
 	
-	public void completer(Estado estado, int i, int j){
+	public void completer(Estado estado, int j, int k){
+		estado.incompleto = false;
 		String elemento = estado.regra.direita.get(estado.entrada).valor;
-		System.out.println("E: "+elemento);
-		for(Estado estadoChart : chart[i]){
-			System.out.println("V: "+estado.regra.variavel);
-			if(estadoChart.incompleto && elemento.equals(estado.regra.variavel)){
+		for(Estado estadoChart : chart[j]){
+			if(elemento.equals(estado.regra.variavel)){
 				estadoChart.ponto = j;
-				enfileirar(estadoChart, chart[j]);
+				enfileirar(estadoChart, chart[k]);
 			}
 		}
 	}

@@ -3,8 +3,9 @@ public class Estado{
 		int entrada;
 		int ponto;
 		boolean incompleto;
+		String acao;
 
-		public Estado(Regra regra, int entrada, int ponto) {
+		public Estado(Regra regra, int entrada, int ponto, String acao) {
 			super();
 			try {
 				this.regra = (Regra)regra.clone();
@@ -13,26 +14,30 @@ public class Estado{
 			}
 			this.entrada = entrada;
 			this.ponto = ponto;
-			this.incompleto = true;
+			if(this.ponto == regra.direita.size())
+				this.incompleto = false;
+			else
+				this.incompleto = true;
+			this.acao = acao;
 		}
 		
-		public Elemento getProximoElemento(int entrada){
+		public Elemento getElemento(){
 			Elemento retorno = null;
-			if(regra.direita.size() > entrada +1)
-				retorno = regra.direita.get(entrada+1);
+			if(entrada < regra.direita.size())
+				retorno = regra.direita.get(entrada);
 			return retorno;
 		}
-		
+
 		@Override
 		protected Object clone() throws CloneNotSupportedException {
-			return new Estado((Regra) this.regra.clone(), this.entrada, this.ponto);
+			return new Estado((Regra) this.regra.clone(), this.entrada, this.ponto, this.acao);
 		}
 		
 		@Override
 		public String toString() {
 			String retorno = "";
 			if(regra!=null)
-				retorno = "Palavra: ["+entrada+"]["+ponto+"]"+", Regra: "+ regra + ", Elemento: " + regra.direita.get(entrada).valor + ", Incompleto: " + Boolean.toString(incompleto); 
+				retorno = regra + " ["+entrada+"]["+ponto+"]"+ ", Acao: " + acao+  ", Elemento: " + regra.direita.get(entrada).valor + ", Incompleto: " + Boolean.toString(incompleto); 
 			return retorno+"\n";
 		}
 		@Override

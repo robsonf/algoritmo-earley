@@ -1,5 +1,4 @@
-S -> ST
-ST -> NP VP
+S -> NP VP
 VP -> TV NP | IV | IV PP
 NP -> NOM | DET NOM
 NOM -> NX | NX SREL
