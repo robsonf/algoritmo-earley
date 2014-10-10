@@ -1,13 +1,13 @@
-(S (NP (Proper-Noun Houston))
-   (VP (Verb include)))
+(S (VP (Verb include))
+   (NP (Proper-Noun Houston)))
 
-(S (NP (Proper-Noun TWA))
-   (VP (Verb prefer)))
+(S (VP (Verb prefer))
+   (NP (Proper-Noun TWA)))
 
 (S (Aux (does))
+   (VP (Verb prefer))
    (NP (Det a)
-       (Nominal (Noun money)))
-   (VP (Verb prefer)))
+       (Nominal (Noun money))))
 
 (S (VP (Verb prefer)
        (NP (Det this) 

@@ -113,9 +113,9 @@ public class ManipulaCorpus {
 		LinkedHashSet<Regra> conjuntoRegrasSemRepeticao = new LinkedHashSet<Regra>();
 
 		// cria nova regra inicial S
-//		for(DefaultMutableTreeNode df : listaArvoresSintaticas){
-//			conjuntoRegrasSemRepeticao.add(new Regra(Regra.NAO_LEXICO, REGRA_INICIAL_CORPUS, df.toString()));
-//		}
+		for(DefaultMutableTreeNode df : listaArvoresSintaticas){
+			conjuntoRegrasSemRepeticao.add(new Regra(Regra.NAO_LEXICO, REGRA_INICIAL_CORPUS, df.toString()));
+		}
 
 		// adiciona as regras em um conjunto (conjuntoRegras), para eliminar regras repetidas
 		for (DefaultMutableTreeNode df : listaArvoresSintaticas) {

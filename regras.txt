@@ -1,8 +1,9 @@
-S -> NP VP | Aux NP VP | VP | VP NP
-VP -> Verb | Verb NP
-Verb -> include | prefer | book
+_S_CORPUS_ -> S
+S -> VP NP | Aux VP NP | VP
 NP -> Proper-Noun | Det Nominal
 Proper-Noun -> houston | twa
+VP -> Verb | Verb NP
+Verb -> include | prefer | book
 Nominal -> Noun | Noun Nominal
 Noun -> money | meal | book | fight
 Det -> a | this | that

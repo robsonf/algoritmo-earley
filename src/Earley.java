@@ -46,7 +46,7 @@ public class Earley {
 //			parser(gramatica, sentenca);
 //		}
 
-		parser(gramatica, sentencas.get(0));
+		parser(gramatica, sentencas.get(sentencas.size()-1));
 
 	}
 	
@@ -109,8 +109,8 @@ public class Earley {
 		if(gramatica.containsKey(elemento.valor)){
 			for(Regra regra : (LinkedHashSet<Regra>)gramatica.get(elemento.valor)){
 				if(regra.tipo == Regra.NAO_LEXICO){
-					Estado novoEstado = new Estado(regra, estado.entrada, j, "Predictor");
-					enfileirar(novoEstado, chart[j]);
+					Estado novoEstado = new Estado(regra, estado.entrada, estado.ponto, "Predictor");
+					enfileirar(novoEstado, chart[estado.ponto]);
 				}
 			}
 		}
