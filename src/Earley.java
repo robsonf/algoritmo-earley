@@ -77,12 +77,12 @@ public class Earley {
 				if(estado.incompleto && elemento != null){
 					// elemento não é lexico
 					if(!lexico.contains(elemento)){
-						predictor(estado, i, j);
+						predictor(estado);
 					}else{
-						scanner(estado, i, j);							
+						scanner(estado);							
 					}
 				}else{
-					completer(estado, i, j);
+					completer(estado);
 				}
 				j++;
 			}
@@ -104,7 +104,7 @@ public class Earley {
 		}
 	}
 	
-	public void predictor(Estado estado, int i, int j){
+	public void predictor(Estado estado){
 		Elemento elemento = estado.getElemento();
 		if(gramatica.containsKey(elemento.valor)){
 			for(Regra regra : (LinkedHashSet<Regra>)gramatica.get(elemento.valor)){
@@ -117,26 +117,26 @@ public class Earley {
 //		System.out.println("Predictor: " + chart);
 	}
 	
-	public void scanner(Estado estado, int i, int j){
+	public void scanner(Estado estado){
 		String elemento = estado.regra.direita.get(estado.entrada).valor;
 		if(lexico.contains(elemento)){
 			for(Regra regra : (LinkedHashSet<Regra>)gramatica.get(elemento)){
 				if(regra.direita.get(0).valor.equals(elemento)){
-					Estado novoEstado = new Estado(regra, j,j+1, "Scanner");
-					enfileirar(novoEstado, chart[j+1]);
+					Estado novoEstado = new Estado(regra, estado.ponto,estado.ponto+1, "Scanner");
+					enfileirar(novoEstado, chart[estado.ponto+1]);
 				}
 			}
 		}
 //		System.out.println("Scanner: " + chart);
 	}
 	
-	public void completer(Estado estado, int j, int k){
+	public void completer(Estado estado){
 		estado.incompleto = false;
 		String elemento = estado.regra.direita.get(estado.entrada).valor;
-		for(Estado estadoChart : chart[j]){
+		for(Estado estadoChart : chart[estado.entrada]){
 			if(elemento.equals(estado.regra.variavel)){
-				estadoChart.ponto = j;
-				enfileirar(estadoChart, chart[k]);
+				estadoChart.ponto = estado.entrada;
+				enfileirar(estadoChart, chart[estado.ponto]);
 			}
 		}
 	}
