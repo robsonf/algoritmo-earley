@@ -1,20 +1,20 @@
 public class Estado{
 		Regra regra;
-		int entrada;
-		int ponto;
+		int i;
+		int j;
 		boolean incompleto;
 		String acao;
 
-		public Estado(Regra regra, int entrada, int ponto, String acao) {
+		public Estado(Regra regra, int i, int j, String acao) {
 			super();
 			try {
 				this.regra = (Regra)regra.clone();
 			} catch (CloneNotSupportedException e) {
 				e.printStackTrace();
 			}
-			this.entrada = entrada;
-			this.ponto = ponto;
-			if(this.ponto == regra.direita.size())
+			this.i = i;
+			this.j = j;
+			if(this.j == regra.direita.size())
 				this.incompleto = false;
 			else
 				this.incompleto = true;
@@ -23,30 +23,30 @@ public class Estado{
 		
 		public Elemento getElemento(){
 			Elemento retorno = null;
-			if(entrada < regra.direita.size())
-				retorno = regra.direita.get(entrada);
+			if(i < regra.direita.size())
+				retorno = regra.direita.get(i);
 			return retorno;
 		}
 
 		@Override
 		protected Object clone() throws CloneNotSupportedException {
-			return new Estado((Regra) this.regra.clone(), this.entrada, this.ponto, this.acao);
+			return new Estado((Regra) this.regra.clone(), this.i, this.j, this.acao);
 		}
 		
 		@Override
 		public String toString() {
 			String retorno = "";
 			if(regra!=null)
-				retorno = regra + " ["+entrada+"]["+ponto+"]"+ ", Acao: " + acao+  ", Elemento: " + regra.direita.get(entrada).valor + ", Incompleto: " + Boolean.toString(incompleto); 
+				retorno = regra + " ["+i+"]["+j+"]"+ ", Acao: " + acao+  ", Elemento: " + regra.direita.get(i).valor + ", Incompleto: " + Boolean.toString(incompleto); 
 			return retorno+"\n";
 		}
 		@Override
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime * result + ponto;
+			result = prime * result + j;
 			result = prime * result + (incompleto ? 1231 : 1237);
-			result = prime * result + entrada;
+			result = prime * result + i;
 			result = prime * result + ((regra == null) ? 0 : regra.hashCode());
 			return result;
 		}
@@ -59,11 +59,11 @@ public class Estado{
 			if (getClass() != obj.getClass())
 				return false;
 			Estado other = (Estado) obj;
-			if (ponto != other.ponto)
+			if (j != other.j)
 				return false;
 			if (incompleto != other.incompleto)
 				return false;
-			if (entrada != other.entrada)
+			if (i != other.i)
 				return false;
 			if (regra == null) {
 				if (other.regra != null)

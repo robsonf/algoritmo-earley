@@ -129,7 +129,7 @@ public class ManipulaCorpus {
 			    if(!insconsistencia){
 			    	conjuntoRegrasSemRepeticao.add(regra);
 			    	if(regra.tipo == Regra.LEXICO)
-			    		lexico.add(regra.direita.get(0).valor);
+			    		lexico.add(regra.variavel);
 			    }else
 			    	listaArvoresInconsistentes.add(df);				    	
 			}

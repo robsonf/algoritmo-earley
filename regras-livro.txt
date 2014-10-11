@@ -1,0 +1,15 @@
+S -> NP VP
+S -> Aux NP VP
+S -> VP
+NP -> Det Nominal
+NP -> Proper-Noun
+VP -> Verb
+VP -> Verb NP
+Nominal -> Noun
+Nominal -> Noun Nominal
+Det -> that | this | a
+Noun -> book | flight | meal | money
+Verb -> book | include | prefer
+Aux -> does
+Prep -> from | to | on
+Proper-Noun -> Houston | TWA

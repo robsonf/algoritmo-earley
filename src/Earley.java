@@ -63,28 +63,26 @@ public class Earley {
 		enfileirar(novoEstado, chart[0]);
 
 		// para cada palavra da sentenca
-		for (int i = 0, k = sentenca.size(); k >= 0; k--, i++) {
+		for (int i = 0, k = sentenca.size()-1; k >= 0; k--, i++) {
 			String palavra = null;
-			if(k!=sentenca.size())
+			if(k<sentenca.size())
 				palavra = sentenca.get(k).direita.get(0).valor;
-			// para cada linha do chart, verifica cada elemento de um estado
+			// verifica cada estado na lista de posicao [i] do chart
 			ArrayList<Estado> estados = chart[i];
-			int j = 0;
-			while(estados!=null && j < estados.size()){
+			for (int j = 0; j < estados.size(); j++) {
 				Estado estado = estados.get(j);
 				// se existe proximo elemento no lado direito de um ponto
 				Elemento elemento = estado.getElemento();
-				if(estado.incompleto && elemento != null){
+				if(estado.incompleto){
 					// elemento não é lexico
-					if(!lexico.contains(elemento)){
+					if(!lexico.contains(elemento.valor)){
 						predictor(estado);
 					}else{
-						scanner(estado);							
+						scanner(estado, palavra);							
 					}
 				}else{
 					completer(estado);
 				}
-				j++;
 			}
 		}
 
@@ -109,34 +107,32 @@ public class Earley {
 		if(gramatica.containsKey(elemento.valor)){
 			for(Regra regra : (LinkedHashSet<Regra>)gramatica.get(elemento.valor)){
 				if(regra.tipo == Regra.NAO_LEXICO){
-					Estado novoEstado = new Estado(regra, estado.entrada, estado.ponto, "Predictor");
-					enfileirar(novoEstado, chart[estado.ponto]);
+					Estado novoEstado = new Estado(regra, estado.i, estado.j, "Predictor");
+					enfileirar(novoEstado, chart[estado.j]);
 				}
 			}
 		}
 //		System.out.println("Predictor: " + chart);
 	}
 	
-	public void scanner(Estado estado){
-		String elemento = estado.regra.direita.get(estado.entrada).valor;
-		if(lexico.contains(elemento)){
-			for(Regra regra : (LinkedHashSet<Regra>)gramatica.get(elemento)){
-				if(regra.direita.get(0).valor.equals(elemento)){
-					Estado novoEstado = new Estado(regra, estado.ponto,estado.ponto+1, "Scanner");
-					enfileirar(novoEstado, chart[estado.ponto+1]);
-				}
+	public void scanner(Estado estado, String palavra){
+		String elemento = estado.getElemento().valor;
+		for(Regra regra : (LinkedHashSet<Regra>)gramatica.get(elemento)){
+			if(regra.tipo == Regra.LEXICO && regra.direita.get(0).valor.equals(palavra)){
+				Estado novoEstado = new Estado(regra, estado.j,estado.j+1, "Scanner");
+				enfileirar(novoEstado, chart[estado.j+1]);
 			}
 		}
 //		System.out.println("Scanner: " + chart);
 	}
 	
 	public void completer(Estado estado){
-		estado.incompleto = false;
-		String elemento = estado.regra.direita.get(estado.entrada).valor;
-		for(Estado estadoChart : chart[estado.entrada]){
+		String elemento = estado.regra.direita.get(estado.i).valor;
+		System.out.println(elemento);
+		for(Estado estadoChart : chart[estado.i]){
 			if(elemento.equals(estado.regra.variavel)){
-				estadoChart.ponto = estado.entrada;
-				enfileirar(estadoChart, chart[estado.ponto]);
+				estadoChart.j = estado.i;
+				enfileirar(estadoChart, chart[estado.j]);
 			}
 		}
 	}
