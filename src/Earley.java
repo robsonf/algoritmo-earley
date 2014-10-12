@@ -138,12 +138,12 @@ public class Earley {
 			//estadoChart.regra.direita.size() <= estado.regra.direita.size()
 			if(estadoChart.incompleto && estadoChart.getElemento().valor.equals(cabeca) && estadoChart.regra.direita.size() <= estado.regra.direita.size()){
 				System.out.println("Elemento: "+cabeca);
-				imprimirChart();
 
 				Estado novoEstado = new Estado(estadoChart.regra, i, k, "Completer");
 				enfileirar(novoEstado, chart[k]);
 			}
 		}
+		imprimirChart();
 	}
 
 	public static void main(String[] args) {

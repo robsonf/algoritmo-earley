@@ -71,8 +71,8 @@ public class ManipulaCorpus {
 	public static void main(String[] args) {
 		try {
 			// leitura do corpus para a memoria
-//			StringBuffer sb = suavizarCorpus("aires-treino.parsed");
-			StringBuffer sb = suavizarCorpus("corpus.txt");
+			StringBuffer sb = suavizarCorpus("aires-treino.parsed");
+//			StringBuffer sb = suavizarCorpus("corpus.txt");
 
 			// varre os caracteres do corpus criando uma árvore para cada sentença
 			ArrayList<DefaultMutableTreeNode> listaArvoresSintaticas = converterCorpusEmArvore(sb);
@@ -83,6 +83,8 @@ public class ManipulaCorpus {
 			// elimina regras redundantes mantendo a ordem de inserção das regras
 			LinkedHashSet<Regra> conjuntoRegrasSemRepeticao = removerRedundancia(listaArvoresSintaticas, listaArvoresInconsistentes);
 
+			System.out.println(listaArvoresSintaticas.size());
+
 			// elimina árvores sintaticas inconsistentes da listaArvoresSintaticas
 			for (DefaultMutableTreeNode df : listaArvoresInconsistentes) {
 				listaArvoresSintaticas.remove(df);
@@ -90,6 +92,7 @@ public class ManipulaCorpus {
 
 			// agrupa as sentencas em uma lista de regras do tipo Lexico
 			ArrayList<ArrayList<Regra>> listaSentencas = extrairSentencas(listaArvoresSintaticas);
+			System.out.println(listaSentencas.size());
 			
 			// agrupa regras no formato S -> A B | C D \n A -> a
 			ArrayList<String> listaGramaticaFinal = formatarRegras(conjuntoRegrasSemRepeticao);
