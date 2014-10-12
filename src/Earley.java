@@ -69,7 +69,8 @@ public class Earley {
 				palavra = sentenca.get(k).direita.get(0).valor;
 			// verifica cada estado na lista de posicao [i] do chart
 			ArrayList<Estado> estados = chart[i];
-			for (int j = 0; j < estados.size(); j++) {
+			int j = 0; 
+			while(estados != null && j < estados.size()) {
 				Estado estado = estados.get(j);
 				// se existe proximo elemento no lado direito de um ponto
 				Elemento elemento = estado.getElemento();
@@ -83,6 +84,7 @@ public class Earley {
 				}else{
 					completer(estado);
 				}
+				j++;
 			}
 		}
 
@@ -107,7 +109,7 @@ public class Earley {
 		if(gramatica.containsKey(elemento.valor)){
 			for(Regra regra : (LinkedHashSet<Regra>)gramatica.get(elemento.valor)){
 				if(regra.tipo == Regra.NAO_LEXICO){
-					Estado novoEstado = new Estado(regra, estado.i, estado.j, "Predictor");
+					Estado novoEstado = new Estado(regra, estado.j, estado.j, "Predictor");
 					enfileirar(novoEstado, chart[estado.j]);
 				}
 			}
@@ -127,12 +129,19 @@ public class Earley {
 	}
 	
 	public void completer(Estado estado){
-		String elemento = estado.regra.direita.get(estado.i).valor;
-		System.out.println(elemento);
-		for(Estado estadoChart : chart[estado.i]){
-			if(elemento.equals(estado.regra.variavel)){
-				estadoChart.j = estado.i;
-				enfileirar(estadoChart, chart[estado.j]);
+		String cabeca = estado.regra.variavel;
+		int j = estado.i;
+		int k = estado.j;
+		for (int l = 0; l < chart[j].size(); l++) {
+			Estado estadoChart = chart[j].get(l);
+			int i = estadoChart.i;
+			//estadoChart.regra.direita.size() <= estado.regra.direita.size()
+			if(estadoChart.incompleto && estadoChart.getElemento().valor.equals(cabeca) && estadoChart.regra.direita.size() <= estado.regra.direita.size()){
+				System.out.println("Elemento: "+cabeca);
+				imprimirChart();
+
+				Estado novoEstado = new Estado(estadoChart.regra, i, k, "Completer");
+				enfileirar(novoEstado, chart[k]);
 			}
 		}
 	}
@@ -145,7 +154,7 @@ public class Earley {
 		String retorno = "";
 		if(chart!=null){
 			for (int i = 0; i < chart.length; i++) {
-				retorno += "Chart ["+ i + "] :\n"+ chart[i] + "\n";	
+				retorno += String.format("Chart [%d] :\n%s\n",i,chart[i]);	
 			}
 		}
 		System.out.println(retorno+"\n");

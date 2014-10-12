@@ -46,7 +46,7 @@ public class Regra {
 	@Override
 	public String toString() {
 		if(direita != null)
-			return variavel + " -> " + direita.toString();
+			return String.format("%-10s -> %-15s", variavel,  direita.toString());
 		else
 			return variavel; 
 	}

@@ -37,7 +37,7 @@ public class Estado{
 		public String toString() {
 			String retorno = "";
 			if(regra!=null)
-				retorno = regra + " ["+i+"]["+j+"]"+ ", Acao: " + acao+  ", Elemento: " + regra.direita.get(i).valor + ", Incompleto: " + Boolean.toString(incompleto); 
+				retorno = String.format("%-30s [%d][%d], Acao: %s, Elemento: %s, Incompleto: %s", regra,i,j,acao,regra.direita.get(i).valor, Boolean.toString(incompleto)); 
 			return retorno+"\n";
 		}
 		@Override
