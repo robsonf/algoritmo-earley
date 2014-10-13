@@ -59,13 +59,14 @@ public class Earley {
 
 		// adiciona estado S(0) ao chart
 		Regra novaRegra = new Regra(Regra.NAO_LEXICO, REGRA_INICIAL, ManipulaCorpus.REGRA_INICIAL_CORPUS);
-		Estado novoEstado = new Estado(novaRegra, 0, 0, "Dummy start state");
+		Estado novoEstado = new Estado(novaRegra, 0, 0, 0, "Dummy start state");
 		enfileirar(novoEstado, chart[0]);
 
 		// para cada palavra da sentenca
-		for (int i = 0, k = sentenca.size()-1; k >= 0; k--, i++) {
+		for (int i = 0; i <= sentenca.size(); i++) {
 			String palavra = null;
-			if(k<sentenca.size())
+			int k = sentenca.size()-i-1;
+			if(k<sentenca.size() && k>=0)
 				palavra = sentenca.get(k).direita.get(0).valor;
 			// verifica cada estado na lista de posicao [i] do chart
 			ArrayList<Estado> estados = chart[i];
@@ -109,7 +110,7 @@ public class Earley {
 		if(gramatica.containsKey(elemento.valor)){
 			for(Regra regra : (LinkedHashSet<Regra>)gramatica.get(elemento.valor)){
 				if(regra.tipo == Regra.NAO_LEXICO){
-					Estado novoEstado = new Estado(regra, estado.j, estado.j, "Predictor");
+					Estado novoEstado = new Estado(regra, 0, estado.j, estado.j, "Predictor");
 					enfileirar(novoEstado, chart[estado.j]);
 				}
 			}
@@ -121,7 +122,7 @@ public class Earley {
 		String elemento = estado.getElemento().valor;
 		for(Regra regra : (LinkedHashSet<Regra>)gramatica.get(elemento)){
 			if(regra.tipo == Regra.LEXICO && regra.direita.get(0).valor.equals(palavra)){
-				Estado novoEstado = new Estado(regra, estado.j,estado.j+1, "Scanner");
+				Estado novoEstado = new Estado(regra, estado.ponto+1, estado.j,estado.j+1, "Scanner");
 				enfileirar(novoEstado, chart[estado.j+1]);
 			}
 		}
@@ -135,15 +136,17 @@ public class Earley {
 		for (int l = 0; l < chart[j].size(); l++) {
 			Estado estadoChart = chart[j].get(l);
 			int i = estadoChart.i;
-			//estadoChart.regra.direita.size() <= estado.regra.direita.size()
-			if(estadoChart.incompleto && estadoChart.getElemento().valor.equals(cabeca) && estadoChart.regra.direita.size() <= estado.regra.direita.size()){
-				System.out.println("Elemento: "+cabeca);
-
-				Estado novoEstado = new Estado(estadoChart.regra, i, k, "Completer");
+//			if(cabeca.equals("VP")){
+////			if(cabeca.equals("VP") && estado.getElemento() != null && estado.getElemento().equals(estadoChart.getElemento())){
+//				System.out.println("Estado Chart: " + estadoChart);
+//				System.out.println("Estado Parametro: " + estado);
+//			}
+			Estado novoEstado = new Estado(estadoChart.regra, estadoChart.ponto+1, i, k, "Completer");
+			if(estadoChart.incompleto==true && estadoChart.getElemento().valor.equals(cabeca)){
 				enfileirar(novoEstado, chart[k]);
 			}
 		}
-		imprimirChart();
+//		imprimirChart();
 	}
 
 	public static void main(String[] args) {
@@ -154,7 +157,8 @@ public class Earley {
 		String retorno = "";
 		if(chart!=null){
 			for (int i = 0; i < chart.length; i++) {
-				retorno += String.format("Chart [%d] :\n%s\n",i,chart[i]);	
+				if(chart[i]!=null)
+					retorno += String.format("Chart [%d] :\n%s\n",i,chart[i]);	
 			}
 		}
 		System.out.println(retorno+"\n");

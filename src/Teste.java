@@ -10,7 +10,7 @@ abstract public class Teste {
 		
 		Regra novaRegra = new Regra(Regra.NAO_LEXICO, "S'");
 		novaRegra.adicionarElemento("S");
-		Estado novoEstado = new Estado(novaRegra, 0, 0, "predictor");
+		Estado novoEstado = new Estado(novaRegra, 0, 0, 0, "predictor");
 		for (ConcurrentLinkedQueue<Estado> c : tabela) {
 			ConcurrentLinkedQueue<Estado> novo = null; 
 				novo = new ConcurrentLinkedQueue<Estado>();

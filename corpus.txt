@@ -16,8 +16,8 @@
 
 (S (VP (Verb book)
        (NP (Det that)
-           (Nominal (Noun fight)))))
+           (Nominal (Noun flight)))))
 
 (S (VP (Verb book))
    (NP (Det that)
-       (Nominal (Noun fight))))
+       (Nominal (Noun flight))))
