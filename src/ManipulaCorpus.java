@@ -2,15 +2,20 @@
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.TreeMap;
@@ -20,19 +25,19 @@ import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 
-public class ManipulaCorpus {
+public class ManipulaCorpus implements Serializable{
 
+	private static final long serialVersionUID = -7064217564445825362L;
 	public static final String REGRA_INICIAL_CORPUS = "_S_CORPUS_";
-	public static LinkedHashMap<String, LinkedHashSet<Regra>> gramatica = new LinkedHashMap<String, LinkedHashSet<Regra>>();
-	public static LinkedHashSet<Regra> regras = new LinkedHashSet<Regra>();
-	public static LinkedHashSet<String> lexico = new LinkedHashSet<String>();
-	public static ArrayList<ArrayList<Regra>> sentencas = new ArrayList<ArrayList<Regra>>();
+	public LinkedHashMap<String, LinkedHashSet<Regra>> gramatica = new LinkedHashMap<String, LinkedHashSet<Regra>>();
+	public LinkedHashSet<Regra> regras = new LinkedHashSet<Regra>();
+	public LinkedHashSet<String> lexico = new LinkedHashSet<String>();
+	public ArrayList<ArrayList<Regra>> sentencas = new ArrayList<ArrayList<Regra>>();
 	
-	public static void extrairRegrasESentenca(){
+	public void extrairRegrasESentenca(String corpus){
 		try {
 			// leitura do corpus para a memoria
-//			StringBuffer sb = suavizarCorpus("aires-treino.parsed");
-			StringBuffer sb = suavizarCorpus("corpus.txt");
+			StringBuffer sb = suavizarCorpus(corpus);
 
 			// varre os caracteres do corpus criando uma árvore para cada sentença
 			ArrayList<DefaultMutableTreeNode> listaArvoresSintaticas = converterCorpusEmArvore(sb);
@@ -70,6 +75,7 @@ public class ManipulaCorpus {
 	
 	public static void main(String[] args) {
 		try {
+			ManipulaCorpus manipula = new ManipulaCorpus();
 			// leitura do corpus para a memoria
 			StringBuffer sb = suavizarCorpus("aires-treino.parsed");
 //			StringBuffer sb = suavizarCorpus("corpus.txt");
@@ -81,7 +87,7 @@ public class ManipulaCorpus {
 			LinkedHashSet<DefaultMutableTreeNode> listaArvoresInconsistentes = new LinkedHashSet<DefaultMutableTreeNode>();
 
 			// elimina regras redundantes mantendo a ordem de inserção das regras
-			LinkedHashSet<Regra> conjuntoRegrasSemRepeticao = removerRedundancia(listaArvoresSintaticas, listaArvoresInconsistentes);
+			LinkedHashSet<Regra> conjuntoRegrasSemRepeticao = manipula.removerRedundancia(listaArvoresSintaticas, listaArvoresInconsistentes);
 
 			System.out.println(listaArvoresSintaticas.size());
 
@@ -112,7 +118,7 @@ public class ManipulaCorpus {
 	 * respeitando a ordem de inserção, eliminando regras redundantes 
 	 * e inconsistentes (sujeira do corpus, eg. VB -> VB terminal)
 	 */
-	private static LinkedHashSet<Regra>  removerRedundancia(ArrayList<DefaultMutableTreeNode> listaArvoresSintaticas, LinkedHashSet<DefaultMutableTreeNode> listaArvoresInconsistentes) {
+	private LinkedHashSet<Regra>  removerRedundancia(ArrayList<DefaultMutableTreeNode> listaArvoresSintaticas, LinkedHashSet<DefaultMutableTreeNode> listaArvoresInconsistentes) {
 		LinkedHashSet<Regra> conjuntoRegrasSemRepeticao = new LinkedHashSet<Regra>();
 
 		// cria nova regra inicial S

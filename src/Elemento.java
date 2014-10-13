@@ -1,10 +1,11 @@
+import java.io.Serializable;
 
-
-public class Elemento {
+public class Elemento implements Serializable{
+	private static final long serialVersionUID = 1810064906266790204L;
 	public static final int TERMINAL = 1;
 	public static final int NAO_TERMINAL = 0;
-	int tipo;
-	String valor;
+	public int tipo;
+	public String valor;
 	public Elemento(String valor) {
 		super();
 		this.valor = valor;

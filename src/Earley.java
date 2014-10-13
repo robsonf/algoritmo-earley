@@ -1,9 +1,13 @@
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 /*
  * Um estado no algorítimo é composto de três partes: A regra sendo
@@ -32,25 +36,41 @@ public class Earley {
 	public static final String REGRA_INICIAL = "_S_EARLEY_";
 	ArrayList<Estado> [] chart = null;
 	LinkedHashSet<String> lexico = null;
-	public static LinkedHashMap<String, LinkedHashSet<Regra>> gramatica = null;
+	LinkedHashMap<String, LinkedHashSet<Regra>> gramatica = null;
 	ArrayList<ArrayList<Regra>> sentencas = null;
 	
 	public Earley() {
-		ManipulaCorpus.extrairRegrasESentenca();
-
-		gramatica = ManipulaCorpus.gramatica;
-		lexico = ManipulaCorpus.lexico;
-		sentencas = ManipulaCorpus.sentencas; 
+	    long tempoInicial = System.currentTimeMillis();  
+	    obterGramatica("aires-treino.parsed");
+//	    obterGramatica("corpus");
+		long tempoFinal = System.currentTimeMillis();  
+	    System.out.println( String.format("Tempo: %d segundos.", (tempoFinal - tempoInicial)/1000));  
 
 //		for (ArrayList<Regra> sentenca: sentencas) {
 //			parser(gramatica, sentenca);
 //		}
+	   
+	    sentencas = new ArrayList<ArrayList<Regra>>();
+	    ArrayList a = new ArrayList<Regra>();
+	    Regra r1 = new Regra(Regra.LEXICO, "A");
+	    r1.adicionarElemento("asdf");
+	    Regra r2 = new Regra(Regra.LEXICO, "B");
+	    r2.adicionarElemento("asdf");
+	    a.add(r1);
+	    a.add(r2);
+	    sentencas.add(a);
 
-		parser(gramatica, sentencas.get(sentencas.size()-1));
+	    System.out.println(sentencas.get(0));
 
+	    tempoInicial = System.currentTimeMillis();  
+		System.out.println(parser(gramatica, sentencas.get(0)));
+	    tempoFinal = System.currentTimeMillis();  
+	    System.out.println( String.format("Tempo: %d segundos.", (tempoFinal - tempoInicial)/1000));
+	    
 	}
 	
-	public void parser(LinkedHashMap<String, LinkedHashSet<Regra>> gramatica, ArrayList<Regra> sentenca){
+	public boolean parser(LinkedHashMap<String, LinkedHashSet<Regra>> gramatica, ArrayList<Regra> sentenca){
+		boolean reconheceu = false;
 		// cria novas possições no chart, uma para cada palavra da sentenca
 		chart  = new ArrayList[sentenca.size()+1];
 		for (int i = 0; i < sentenca.size()+1; i++) {
@@ -70,26 +90,36 @@ public class Earley {
 				palavra = sentenca.get(k).direita.get(0).valor;
 			// verifica cada estado na lista de posicao [i] do chart
 			ArrayList<Estado> estados = chart[i];
-			int j = 0; 
-			while(estados != null && j < estados.size()) {
+			for (int j = 0; j < estados.size(); j++) {
 				Estado estado = estados.get(j);
 				// se existe proximo elemento no lado direito de um ponto
 				Elemento elemento = estado.getElemento();
 				if(estado.incompleto){
 					// elemento não é lexico
-					if(!lexico.contains(elemento.valor)){
-						predictor(estado);
-					}else{
-						scanner(estado, palavra);							
+					if(elemento!=null){
+						if(!lexico.contains(elemento.valor)){
+							predictor(estado);
+						}else{
+							scanner(estado, palavra);							
+						}
 					}
 				}else{
 					completer(estado);
 				}
-				j++;
 			}
 		}
-
-		imprimirChart();
+		
+		for(Estado estado : chart[sentenca.size()]){
+			if(estado.regra.variavel.equals(REGRA_INICIAL) 
+				&& estado.regra.direita.size()==1 
+				&& estado.regra.direita.get(0).valor.equals(ManipulaCorpus.REGRA_INICIAL_CORPUS) 
+				&& estado.incompleto==false
+				&& estado.i == 0 && estado.j == sentenca.size()){
+				reconheceu = true;
+				break;
+			}
+		}
+		return reconheceu;
 	}
 	
 	public void enfileirar(Estado estado, ArrayList<Estado> estados){
@@ -136,13 +166,8 @@ public class Earley {
 		for (int l = 0; l < chart[j].size(); l++) {
 			Estado estadoChart = chart[j].get(l);
 			int i = estadoChart.i;
-//			if(cabeca.equals("VP")){
-////			if(cabeca.equals("VP") && estado.getElemento() != null && estado.getElemento().equals(estadoChart.getElemento())){
-//				System.out.println("Estado Chart: " + estadoChart);
-//				System.out.println("Estado Parametro: " + estado);
-//			}
 			Estado novoEstado = new Estado(estadoChart.regra, estadoChart.ponto+1, i, k, "Completer");
-			if(estadoChart.incompleto==true && estadoChart.getElemento().valor.equals(cabeca)){
+			if(estadoChart!= null && estadoChart.incompleto==true && estadoChart.getElemento()!=null && estadoChart.getElemento().valor.equals(cabeca)){
 				enfileirar(novoEstado, chart[k]);
 			}
 		}
@@ -162,5 +187,35 @@ public class Earley {
 			}
 		}
 		System.out.println(retorno+"\n");
+	}
+	
+	public void obterGramatica(String nomeArquivo){
+		try {
+			File arquivo = new File(nomeArquivo+".dat");
+			if(arquivo.exists()){
+				ObjectInputStream ois = new ObjectInputStream(new FileInputStream(arquivo));
+				ManipulaCorpus objetoSerializado = (ManipulaCorpus) ois.readObject();
+				gramatica = objetoSerializado.gramatica;
+				lexico = objetoSerializado.lexico;
+				sentencas = objetoSerializado.sentencas; 
+				ois.close();
+			}else{
+				ManipulaCorpus manipula = new ManipulaCorpus();
+				manipula.extrairRegrasESentenca(nomeArquivo);
+				gramatica = manipula.gramatica;
+				lexico = manipula.lexico;
+				sentencas = manipula.sentencas; 
+				ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(arquivo));
+				oos.writeObject(manipula);
+				oos.close();		
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+
 	}
 }

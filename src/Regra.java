@@ -1,14 +1,13 @@
-
-
-
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Regra {
+public class Regra implements Serializable{
+	private static final long serialVersionUID = 1301474845689783098L;
 	public static final int LEXICO = 1;
 	public static final int NAO_LEXICO = 0;
-	int tipo;
-	String variavel;
-	ArrayList<Elemento> direita;
+	public int tipo;
+	public String variavel;
+	public ArrayList<Elemento> direita;
 	
 	public Regra(int tipo, String variavel) {
 		super();

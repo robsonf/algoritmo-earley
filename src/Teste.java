@@ -1,42 +1,45 @@
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
-abstract public class Teste {
+public class Teste implements Serializable{
+	TesteLista t;
+
+	public Teste(ArrayList a) {
+		super();
+		this.t = new TesteLista(a);
+	}
+
 	public static void main(String[] args) {
-		
-		ConcurrentLinkedQueue<Estado> [] tabela = new ConcurrentLinkedQueue[2];
-//		System.out.println(Arrays.toString(tabela));
-		
-		Regra novaRegra = new Regra(Regra.NAO_LEXICO, "S'");
-		novaRegra.adicionarElemento("S");
-		Estado novoEstado = new Estado(novaRegra, 0, 0, 0, "predictor");
-		for (ConcurrentLinkedQueue<Estado> c : tabela) {
-			ConcurrentLinkedQueue<Estado> novo = null; 
-				novo = new ConcurrentLinkedQueue<Estado>();
-				novo.add(novoEstado);
-			tabela[0] = novo;
+		try {
+			String nomeArquivo = "teste";
+			File arquivo = new File(nomeArquivo+".dat");
+			if(arquivo.exists()){
+				ObjectInputStream ois = new ObjectInputStream(new FileInputStream(arquivo));
+				Teste objetoSerializado = (Teste) ois.readObject();
+				System.out.println(objetoSerializado.t.a.toString());
+				ois.close();
+			}else{
+				ArrayList<String> a = new ArrayList<String>();
+				a.add("asdf");
+				Teste manipula = new Teste(a);
+				ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(arquivo));
+				oos.writeObject(manipula);
+				oos.close();		
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
 		}
 		
-//		System.out.println(Arrays.toString(tabela));
-		
-		// para cada linha do chart, verifica cada elemento de um estado
-		
-		
-		ArrayList<String> list = new ArrayList<String>();
-		list.add("vivek");
-		list.add("kumar");
-		int contador = 0;
-		while(contador < list.size()){
-			System.out.println(list.get(contador));
-			list.add("abhishek");
-			System.out.println(list.size());
-			contador++;
-		}
-//		System.out.println("After modification:");
-		Iterator i2 = list.iterator();
-		while (i2.hasNext()) {
-			System.out.println(i2.next());
-		}
 	}
 }
