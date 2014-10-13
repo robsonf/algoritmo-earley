@@ -49,16 +49,17 @@ public class Earley {
 //		for (ArrayList<Regra> sentenca: sentencas) {
 //			parser(gramatica, sentenca);
 //		}
-	   
-	    sentencas = new ArrayList<ArrayList<Regra>>();
-	    ArrayList a = new ArrayList<Regra>();
-	    Regra r1 = new Regra(Regra.LEXICO, "A");
-	    r1.adicionarElemento("asdf");
-	    Regra r2 = new Regra(Regra.LEXICO, "B");
-	    r2.adicionarElemento("asdf");
-	    a.add(r1);
-	    a.add(r2);
-	    sentencas.add(a);
+
+//	    sentenca de teste
+//	    sentencas = new ArrayList<ArrayList<Regra>>();
+//	    ArrayList a = new ArrayList<Regra>();
+//	    Regra r1 = new Regra(Regra.LEXICO, "A");
+//	    r1.adicionarElemento("asdf");
+//	    Regra r2 = new Regra(Regra.LEXICO, "B");
+//	    r2.adicionarElemento("asdf");
+//	    a.add(r1);
+//	    a.add(r2);
+//	    sentencas.add(a);
 
 	    System.out.println(sentencas.get(0));
 
