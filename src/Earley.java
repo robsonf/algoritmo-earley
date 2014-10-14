@@ -43,18 +43,18 @@ public class Earley {
 	int contador = 0;
 	
 	public Earley() {
-//	    long tempoInicial = System.currentTimeMillis();  
+	    long tempoInicial = System.currentTimeMillis();  
 	    obterGramatica("aires-treino.parsed");
 //	    obterGramatica("corpus-pequeno");
 //	    obterGramatica("corpus-livro");
-//		long tempoFinal = System.currentTimeMillis();  
-//	    System.out.println(String.format("Tempo: %d segundos.", (tempoFinal - tempoInicial)/1000));  
+		long tempoFinal = System.currentTimeMillis();  
+	    System.out.println(String.format("Tempo: %d segundos.", (tempoFinal - tempoInicial)/1000));  
 
 		for (ArrayList<Regra> sentenca: sentencas) {
-		    long tempoInicial = System.currentTimeMillis();  
+		    tempoInicial = System.currentTimeMillis();  
 			if(parser(gramatica, sentenca))
 				contador++;
-			long tempoFinal = System.currentTimeMillis();  
+			tempoFinal = System.currentTimeMillis();  
 
 			System.out.println(String.format("Sentenca: %d, Tempo: %d segundos.", contador, (tempoFinal - tempoInicial)/1000));
 			gravarChart(contador);
