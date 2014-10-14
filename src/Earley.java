@@ -172,7 +172,7 @@ public class Earley {
 	
 	public void gravarChart(int indice){
 		try {
-			BufferedWriter bw = new BufferedWriter(new FileWriter("charts"+File.pathSeparator+"chart"+indice));
+			BufferedWriter bw = new BufferedWriter(new FileWriter("charts"+File.separator+"chart"+indice));
 			if(chart!=null){
 				for (int i = 0; i < chart.length; i++) {
 					if(chart[i]!=null)
