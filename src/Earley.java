@@ -40,26 +40,25 @@ public class Earley {
 	LinkedHashSet<String> lexico = null;
 	LinkedHashMap<String, LinkedHashSet<Regra>> gramatica = null;
 	ArrayList<ArrayList<Regra>> sentencas = null;
+	int contador = 0;
 	
 	public Earley() {
-	    long tempoInicial = System.currentTimeMillis();  
+//	    long tempoInicial = System.currentTimeMillis();  
 	    obterGramatica("aires-treino.parsed");
 //	    obterGramatica("corpus-pequeno");
 //	    obterGramatica("corpus-livro");
-		long tempoFinal = System.currentTimeMillis();  
-	    System.out.println(String.format("Tempo: %d segundos.", (tempoFinal - tempoInicial)/1000));  
+//		long tempoFinal = System.currentTimeMillis();  
+//	    System.out.println(String.format("Tempo: %d segundos.", (tempoFinal - tempoInicial)/1000));  
 
-//		for (ArrayList<Regra> sentenca: sentencas) {
-//			parser(gramatica, sentenca);
-//		}
+		for (ArrayList<Regra> sentenca: sentencas) {
+		    long tempoInicial = System.currentTimeMillis();  
+			if(parser(gramatica, sentenca))
+				contador++;
+			long tempoFinal = System.currentTimeMillis();  
 
-	    System.out.println(sentencas.get(2));
-
-	    tempoInicial = System.currentTimeMillis();  
-		System.out.println(parser(gramatica, sentencas.get(2)));
-	    tempoFinal = System.currentTimeMillis();  
-	    System.out.println(String.format("Tempo: %d segundos.", (tempoFinal - tempoInicial)/1000));
-	    
+			System.out.println(String.format("Sentenca: %d, Tempo: %d segundos.", contador, (tempoFinal - tempoInicial)/1000));
+			gravarChart(contador);
+		}
 	}
 	
 	public boolean parser(LinkedHashMap<String, LinkedHashSet<Regra>> gramatica, ArrayList<Regra> sentenca){
@@ -112,7 +111,6 @@ public class Earley {
 				break;
 			}
 		}
-		gravarChart();
 		return reconheceu;
 	}
 	
@@ -172,9 +170,9 @@ public class Earley {
 		new Earley();
 	}
 	
-	public void gravarChart(){
+	public void gravarChart(int indice){
 		try {
-			BufferedWriter bw = new BufferedWriter(new FileWriter("chart"));
+			BufferedWriter bw = new BufferedWriter(new FileWriter("charts"+File.pathSeparator+"chart"+indice));
 			if(chart!=null){
 				for (int i = 0; i < chart.length; i++) {
 					if(chart[i]!=null)
