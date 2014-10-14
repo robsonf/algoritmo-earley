@@ -288,7 +288,7 @@ public class ManipulaCorpus implements Serializable{
 	private static void salvarGramaticaEmArquivo(
 			ArrayList<String> listaGramaticaFinal) throws IOException {
 		// escreve regras no arquivo regras.txt
-		BufferedWriter bw = new BufferedWriter(new FileWriter("regras.txt"));
+		BufferedWriter bw = new BufferedWriter(new FileWriter("regras-corpus.txt"));
 		String escreveLinha = "";
 		for (int j = 0; j < listaGramaticaFinal.size(); j++) {
 			escreveLinha = listaGramaticaFinal.get(j);

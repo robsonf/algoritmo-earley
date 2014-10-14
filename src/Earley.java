@@ -1,7 +1,9 @@
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -42,31 +44,21 @@ public class Earley {
 	public Earley() {
 	    long tempoInicial = System.currentTimeMillis();  
 	    obterGramatica("aires-treino.parsed");
-//	    obterGramatica("corpus");
+//	    obterGramatica("corpus-pequeno");
+//	    obterGramatica("corpus-livro");
 		long tempoFinal = System.currentTimeMillis();  
-	    System.out.println( String.format("Tempo: %d segundos.", (tempoFinal - tempoInicial)/1000));  
+	    System.out.println(String.format("Tempo: %d segundos.", (tempoFinal - tempoInicial)/1000));  
 
 //		for (ArrayList<Regra> sentenca: sentencas) {
 //			parser(gramatica, sentenca);
 //		}
 
-//	    sentenca de teste
-//	    sentencas = new ArrayList<ArrayList<Regra>>();
-//	    ArrayList a = new ArrayList<Regra>();
-//	    Regra r1 = new Regra(Regra.LEXICO, "A");
-//	    r1.adicionarElemento("asdf");
-//	    Regra r2 = new Regra(Regra.LEXICO, "B");
-//	    r2.adicionarElemento("asdf");
-//	    a.add(r1);
-//	    a.add(r2);
-//	    sentencas.add(a);
-
-	    System.out.println(sentencas.get(0));
+	    System.out.println(sentencas.get(2));
 
 	    tempoInicial = System.currentTimeMillis();  
-		System.out.println(parser(gramatica, sentencas.get(0)));
+		System.out.println(parser(gramatica, sentencas.get(2)));
 	    tempoFinal = System.currentTimeMillis();  
-	    System.out.println( String.format("Tempo: %d segundos.", (tempoFinal - tempoInicial)/1000));
+	    System.out.println(String.format("Tempo: %d segundos.", (tempoFinal - tempoInicial)/1000));
 	    
 	}
 	
@@ -120,6 +112,7 @@ public class Earley {
 				break;
 			}
 		}
+		gravarChart();
 		return reconheceu;
 	}
 	
@@ -153,7 +146,7 @@ public class Earley {
 		String elemento = estado.getElemento().valor;
 		for(Regra regra : (LinkedHashSet<Regra>)gramatica.get(elemento)){
 			if(regra.tipo == Regra.LEXICO && regra.direita.get(0).valor.equals(palavra)){
-				Estado novoEstado = new Estado(regra, estado.ponto+1, estado.j,estado.j+1, "Scanner");
+				Estado novoEstado = new Estado(regra, 1, estado.j,estado.j+1, "Scanner");
 				enfileirar(novoEstado, chart[estado.j+1]);
 			}
 		}
@@ -177,6 +170,23 @@ public class Earley {
 
 	public static void main(String[] args) {
 		new Earley();
+	}
+	
+	public void gravarChart(){
+		try {
+			BufferedWriter bw = new BufferedWriter(new FileWriter("chart"));
+			if(chart!=null){
+				for (int i = 0; i < chart.length; i++) {
+					if(chart[i]!=null)
+						bw.write(String.format("Chart [%d] :\n%s\n",i,chart[i]));	
+				}
+			}
+			bw.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void imprimirChart(){
