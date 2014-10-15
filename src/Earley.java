@@ -48,17 +48,23 @@ public class Earley {
 //	    obterGramatica("corpus-pequeno");
 //	    obterGramatica("corpus-livro");
 		long tempoFinal = System.currentTimeMillis();  
-	    System.out.println(String.format("Tempo: %d segundos.", (tempoFinal - tempoInicial)/1000));  
+//	    System.out.println(String.format("Tempo: %d segundos.", (tempoFinal - tempoInicial)/1000));  
 
 		for (ArrayList<Regra> sentenca: sentencas) {
-		    tempoInicial = System.currentTimeMillis();  
+//		    tempoInicial = System.currentTimeMillis();  
 			if(parser(gramatica, sentenca))
 				contador++;
-			tempoFinal = System.currentTimeMillis();  
+//			tempoFinal = System.currentTimeMillis();  
 
-			System.out.println(String.format("Sentenca: %d, Tempo: %d segundos.", contador, (tempoFinal - tempoInicial)/1000));
+//			System.out.println(String.format("Sentenca: %d, Tempo: %d segundos.", contador, (tempoFinal - tempoInicial)/1000));
 			gravarChart(contador);
 		}
+
+	    
+//		System.out.println(String.format("Sentenca: %d, Tempo: %d segundos.", contador, (tempoFinal - tempoInicial)/1000));
+		gravarChart(contador);
+
+		
 	}
 	
 	public boolean parser(LinkedHashMap<String, LinkedHashSet<Regra>> gramatica, ArrayList<Regra> sentenca){
@@ -172,6 +178,10 @@ public class Earley {
 	
 	public void gravarChart(int indice){
 		try {
+			File diretorio = new File("charts");
+			if(!diretorio.exists()){
+				diretorio.mkdir();
+			}
 			BufferedWriter bw = new BufferedWriter(new FileWriter("charts"+File.separator+"chart"+indice));
 			if(chart!=null){
 				for (int i = 0; i < chart.length; i++) {
