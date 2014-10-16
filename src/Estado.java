@@ -1,4 +1,6 @@
+import java.awt.Point;
 import java.io.Serializable;
+import java.util.LinkedHashSet;
 
 public class Estado implements Serializable{
 	private static final long serialVersionUID = -7049169438096781668L;
@@ -8,7 +10,13 @@ public class Estado implements Serializable{
 	int ponto;
 	boolean incompleto;
 	String acao;
+	LinkedHashSet<Point> backPointers;
 
+	public Estado(Regra regra, int ponto, int i, int j, String acao, LinkedHashSet<Point> backtracker) {
+		this(regra, ponto, i, j, acao);
+		this.backPointers = backtracker;
+	}
+	
 	public Estado(Regra regra, int ponto, int i, int j, String acao) {
 		super();
 		try {
@@ -24,6 +32,7 @@ public class Estado implements Serializable{
 		else
 			this.incompleto = true;
 		this.acao = acao;
+		this.backPointers = new LinkedHashSet<Point>();
 	}
 	
 	public Elemento getElemento(){
@@ -35,14 +44,23 @@ public class Estado implements Serializable{
 
 	@Override
 	protected Object clone() throws CloneNotSupportedException {
-		return new Estado((Regra) this.regra.clone(), this.ponto, this.i, this.j, this.acao);
+		LinkedHashSet<Point>tracker = new LinkedHashSet<Point>();
+		for (Point estado: backPointers) {
+			tracker.add(new Point(estado.x, estado.y));
+		}
+		return new Estado((Regra) this.regra.clone(), this.ponto, this.i, this.j, this.acao, tracker);
 	}
 	
 	@Override
 	public String toString() {
 		String retorno = "";
-		if(regra!=null && regra.direita!=null)
-			retorno = String.format("%-30s [%d][%d], Acao: %s, Ponto: %s, %s", regra,i,j,acao,ponto, incompleto?"Incompleto":"Completo"); 
+		if(regra!=null && regra.direita!=null){
+			String tracker = "";
+			for (Point estado: backPointers) {
+				tracker += String.format("[%d,%d] ", estado.x, estado.y);
+			}
+			retorno = String.format("%-30s [%d][%d], Acao: %s, Ponto: %s, %s, Backtracker: %s", regra,i,j,acao,ponto, incompleto?"Incompleto":"Completo", tracker);
+		}
 		return retorno+"\n";
 	}
 

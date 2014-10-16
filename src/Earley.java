@@ -1,3 +1,4 @@
+import java.awt.Point;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,25 +13,35 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 
 /*
- * Um estado no algorítimo é composto de três partes: A regra sendo
- * analisada (X -> uv) A posição do ponto que indica quanto da regra já
- * foi reconhecida Um índice que indica a partir de qual posição no
- * texto foi feito o reconhecimento
+ * O Earley Parser recebe como entrada uma gramática (GLC) e uma sentença 
+ * a ser analisada, retornando verdadeiro ou falso caso a sentença 
+ * seja derivada pela gramática. Para isso, o algoritmo utiliza uma 
+ * lista denominada chart, com tamanho igual ao número de palavras da
+ * sentença mais um; onde cada elemento do chart guarda uma lista
+ * de estados. Um estado pode ser representado por (X -> u • v , [i,j]). 
+ * Ou seja, ele é composto de três partes: a regra em análise(X -> uv); 
+ * a posição do ponto que indica qual elemento da regra já foi reconhecido;
+ * e, um índice que indica a partir de qual posição inicial e final de 
+ * palavras da sentença já foram reconhecidas.
  * 
- * Este estado pode ser representado por (X -> u • v , i) Ao acrescentar
- * um estado em um conjunto é preciso tomar o cuidado de não duplicá-lo
- * se já estiver no conjunto. Começamos colocando em S(0) o estado (S'
- * -> • S, 0)
+ * O primeiro elemento do chart é chamado de Dummy State: 
+ * chart[0] = (S'-> • S, [0,0]), onde S é o estado inicial da gramática
  * 
- * No exame dos estados vamos identificar uma das seguintes três
- * situações:
+ * Não é possível acrescentar estados duplicados no chart.
  * 
- * Completer:
+ * A analise de cada elemento pelo índice do ponto leva a uma das ações:
  * 
- * Predictor: 
+ * Predictor: o elemento é não terminal e deriva outro não terminal,
+ * acrescenta novo estado no chart incrementando o ponto.
  * 
- * Scanner: 
- * 
+ * Scanner: o elemento é não terminal e deriva um terminal (lexico),
+ * caso o terminal seja igual à palavra do indice [j] acrescenta um 
+ * novo estado do tipo "completo" (um estado é completo quando o ponto
+ * já percorreu todos os elementos de sua regra).
+ *  
+ * Completer: cria novos estados no próximo indice do chart a partir dos
+ * estados "completos", ou seja, verifica a cabeça da regra de um estado 
+ * completo e incrementa o ponto dos elementos da regra dos estados anteriores.
  */
 
 public class Earley {
@@ -43,28 +54,27 @@ public class Earley {
 	int contador = 0;
 	
 	public Earley() {
-	    long tempoInicial = System.currentTimeMillis();  
-	    obterGramatica("aires-treino.parsed");
+//	    long tempoInicial = System.currentTimeMillis();  
+//	    obterGramatica("aires-treino.parsed");
 //	    obterGramatica("corpus-pequeno");
-//	    obterGramatica("corpus-livro");
-		long tempoFinal = System.currentTimeMillis();  
+	    obterGramatica("corpus-livro");
+//		long tempoFinal = System.currentTimeMillis();  
 //	    System.out.println(String.format("Tempo: %d segundos.", (tempoFinal - tempoInicial)/1000));  
 
-		for (ArrayList<Regra> sentenca: sentencas) {
-//		    tempoInicial = System.currentTimeMillis();  
-			if(parser(gramatica, sentenca))
-				contador++;
+//		for (ArrayList<Regra> sentenca: sentencas) {
+//		    tempoInicial = System.currentTimeMillis(); 
+//			System.out.println(sentenca);
+//			if(parser(gramatica, sentenca))
+//				contador++;
 //			tempoFinal = System.currentTimeMillis();  
-
 //			System.out.println(String.format("Sentenca: %d, Tempo: %d segundos.", contador, (tempoFinal - tempoInicial)/1000));
-			gravarChart(contador);
-		}
+//			gravarChart(contador);
+//		}
+	    System.out.println(sentencas.get(5));
+	    System.out.println(parser(gramatica, sentencas.get(5)));
 
-	    
 //		System.out.println(String.format("Sentenca: %d, Tempo: %d segundos.", contador, (tempoFinal - tempoInicial)/1000));
-		gravarChart(contador);
-
-		
+		imprimirChart();
 	}
 	
 	public boolean parser(LinkedHashMap<String, LinkedHashSet<Regra>> gramatica, ArrayList<Regra> sentenca){
@@ -130,6 +140,16 @@ public class Earley {
 					e.printStackTrace();
 				}
 			}
+//			else{
+//				for (Estado antigo : estados) {
+//					if(antigo.equals(estado)){
+//						for (Point tracker : estado.backPointers) {
+//							antigo.backPointers.add((Point) tracker.clone());
+//						}
+//						break;
+//					}
+//				}
+//			}
 		}
 	}
 	
@@ -165,7 +185,10 @@ public class Earley {
 			Estado estadoChart = chart[j].get(l);
 			int i = estadoChart.i;
 			Estado novoEstado = new Estado(estadoChart.regra, estadoChart.ponto+1, i, k, "Completer");
-			if(estadoChart!= null && estadoChart.incompleto==true && estadoChart.getElemento()!=null && estadoChart.getElemento().valor.equals(cabeca)){
+			if(estadoChart!=null 
+				&& estadoChart.incompleto==true 
+				&& estadoChart.getElemento()!=null 
+				&& estadoChart.getElemento().valor.equals(cabeca)){
 				enfileirar(novoEstado, chart[k]);
 			}
 		}

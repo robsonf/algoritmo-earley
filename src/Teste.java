@@ -1,45 +1,20 @@
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.util.ArrayList;
+import java.awt.Point;
 
-public class Teste implements Serializable{
-	TesteLista t;
-
-	public Teste(ArrayList a) {
-		super();
-		this.t = new TesteLista(a);
-	}
-
+public class Teste {
 	public static void main(String[] args) {
+		Regra r1 = new Regra(Regra.LEXICO, "A", "asdf");
+		Regra r2 = new Regra(Regra.LEXICO, "B", "asdf");
+		Estado e1 = new Estado(r1, 0, 0, 0, "Completer");
+		e1.backPointers.add(new Point(1,1));
+		e1.backPointers.add(new Point(1,1));
+		Estado e2 = null;
 		try {
-			String nomeArquivo = "teste";
-			File arquivo = new File(nomeArquivo+".dat");
-			if(arquivo.exists()){
-				ObjectInputStream ois = new ObjectInputStream(new FileInputStream(arquivo));
-				Teste objetoSerializado = (Teste) ois.readObject();
-				System.out.println(objetoSerializado.t.a.toString());
-				ois.close();
-			}else{
-				ArrayList<String> a = new ArrayList<String>();
-				a.add("asdf");
-				Teste manipula = new Teste(a);
-				ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(arquivo));
-				oos.writeObject(manipula);
-				oos.close();		
-			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
+			e2 = new Estado((Regra)r1.clone(), 0, 0, 0, "Completer");
+			e2.backPointers.add(new Point(0,0));
+		} catch (CloneNotSupportedException e) {
 			e.printStackTrace();
 		}
 		
+		System.out.println(e1);
 	}
 }
