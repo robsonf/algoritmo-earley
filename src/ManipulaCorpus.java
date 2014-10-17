@@ -33,6 +33,7 @@ public class ManipulaCorpus implements Serializable{
 	public LinkedHashSet<Regra> regras = new LinkedHashSet<Regra>();
 	public LinkedHashSet<String> lexico = new LinkedHashSet<String>();
 	public ArrayList<ArrayList<Regra>> sentencas = new ArrayList<ArrayList<Regra>>();
+	public ArrayList<DefaultMutableTreeNode> listaArvoresSintaticas = new ArrayList<DefaultMutableTreeNode>(); 
 	
 	public void extrairRegrasESentenca(String corpus){
 		try {
@@ -40,7 +41,7 @@ public class ManipulaCorpus implements Serializable{
 			StringBuffer sb = suavizarCorpus(corpus);
 
 			// varre os caracteres do corpus criando uma árvore para cada sentença
-			ArrayList<DefaultMutableTreeNode> listaArvoresSintaticas = converterCorpusEmArvore(sb);
+			listaArvoresSintaticas = converterCorpusEmArvore(sb);
 
 			// lista com árvores sintáticas inconsistentes (sujeira do corpus, eg. VB -> VB terminal)
 			LinkedHashSet<DefaultMutableTreeNode> listaArvoresInconsistentes = new LinkedHashSet<DefaultMutableTreeNode>();

@@ -1,5 +1,6 @@
 import java.awt.Point;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 
 public class Estado implements Serializable{
@@ -10,11 +11,11 @@ public class Estado implements Serializable{
 	int ponto;
 	boolean incompleto;
 	String acao;
-	LinkedHashSet<Point> backPointers;
+	ArrayList<LinkedHashSet<Point>> backPointers;
 
-	public Estado(Regra regra, int ponto, int i, int j, String acao, LinkedHashSet<Point> backtracker) {
+	public Estado(Regra regra, int ponto, int i, int j, String acao, ArrayList<LinkedHashSet<Point>> backPointer) {
 		this(regra, ponto, i, j, acao);
-		this.backPointers = backtracker;
+		this.backPointers = backPointer;
 	}
 	
 	public Estado(Regra regra, int ponto, int i, int j, String acao) {
@@ -32,7 +33,9 @@ public class Estado implements Serializable{
 		else
 			this.incompleto = true;
 		this.acao = acao;
-		this.backPointers = new LinkedHashSet<Point>();
+		ArrayList<LinkedHashSet<Point>> lista = new ArrayList<LinkedHashSet<Point>>();
+		lista.add(new LinkedHashSet<Point>());
+		this.backPointers = lista;
 	}
 	
 	public Elemento getElemento(){
@@ -44,22 +47,30 @@ public class Estado implements Serializable{
 
 	@Override
 	protected Object clone() throws CloneNotSupportedException {
-		LinkedHashSet<Point>tracker = new LinkedHashSet<Point>();
-		for (Point estado: backPointers) {
-			tracker.add(new Point(estado.x, estado.y));
+		ArrayList<LinkedHashSet<Point>> listaClonada = new ArrayList<LinkedHashSet<Point>>();
+		for (LinkedHashSet<Point> backPointer : backPointers) {
+			LinkedHashSet<Point> lista = new LinkedHashSet<Point>();
+			for (Point point : backPointer) {
+				lista.add(new Point(point.x, point.y));	
+			}
+			listaClonada.add(lista);
 		}
-		return new Estado((Regra) this.regra.clone(), this.ponto, this.i, this.j, this.acao, tracker);
+		return new Estado((Regra) this.regra.clone(), this.ponto, this.i, this.j, this.acao, listaClonada);
 	}
 	
 	@Override
 	public String toString() {
 		String retorno = "";
 		if(regra!=null && regra.direita!=null){
-			String tracker = "";
-			for (Point estado: backPointers) {
-				tracker += String.format("[%d,%d] ", estado.x, estado.y);
+			ArrayList<LinkedHashSet<String>> lista = new ArrayList<LinkedHashSet<String>>();
+			for (LinkedHashSet<Point> backPointer : backPointers) {
+				LinkedHashSet<String> tracker = new LinkedHashSet<String>();
+				for (Point point : backPointer) {
+					tracker.add(String.format("[%d,%d] ", point.x, point.y));
+				}
+				lista.add(tracker);
 			}
-			retorno = String.format("%-30s [%d][%d], Acao: %s, Ponto: %s, %s, Backtracker: %s", regra,i,j,acao,ponto, incompleto?"Incompleto":"Completo", tracker);
+			retorno = String.format("%-30s [%d][%d], Acao: %s, Ponto: %s, %s, BackPointer: %s", regra,i,j,acao,ponto, incompleto?"Incompleto":"Completo", lista);
 		}
 		return retorno+"\n";
 	}
