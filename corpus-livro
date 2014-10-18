@@ -14,10 +14,6 @@
            (Nominal (Noun book)
                     (Nominal (Noun meal))))))
 
-(S (VP (Verb book)
-       (NP (Det that)
-           (Nominal (Noun flight)))))
-
 (S (VP (Verb book))
    (NP (Det that)
        (Nominal (Noun flight))))

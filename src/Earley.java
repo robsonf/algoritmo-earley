@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 
@@ -50,15 +51,22 @@ public class Earley {
 //			System.out.println(String.format("Sentenca: %d, Tempo: %d segundos.", contador, (tempoFinal - tempoInicial)/1000));
 //			gravarChart(contador);
 //		}
-	    System.out.println(sentencas.get(5));
-	    System.out.println(parser(gramatica, sentencas.get(5)));
-//		System.out.println(String.format("Sentenca: %d, Tempo: %d segundos.", contador, (tempoFinal - tempoInicial)/1000));
-//		imprimirChart();
 	    
-		validarArvoreSintatica(listaArvoresSintaticas.get(5), sentencas.get(5));
+	    int indice = 4;
+	    DefaultMutableTreeNode arvore = listaArvoresSintaticas.get(indice);
+	    System.out.println(sentencas.size());
+	    ArrayList<Regra> sentenca = sentencas.get(indice);
+	    System.out.println(gramatica);
+	    System.out.println("Sentenca = " + sentenca);
+	    System.out.println("Sentenca reconhecida pelo parser = " + parser(gramatica, sentenca));
+	    System.out.println("Arvore validada = " + validarArvoreSintatica(arvore, sentenca));
+
+//		imprimirChart();
+
 	}
 	
-	public void validarArvoreSintatica(DefaultMutableTreeNode arvore, ArrayList<Regra> sentenca) {
+	public boolean validarArvoreSintatica(DefaultMutableTreeNode arvore, ArrayList<Regra> sentenca) {
+		boolean retorno = false;
 		int tamanhoSentenca = sentenca.size();
 		for (int i = 0; i < chart[chart.length-1].size(); i++) {
 			Estado estado = chart[chart.length-1].get(i);
@@ -71,23 +79,80 @@ public class Earley {
 				Estado inicialCorpus = chart[point.x].get(point.y);
 //				point = ((Point)inicialCorpus.backPointers.get(0).toArray()[0]);
 //				Estado inicialGramatica = chart[point.x].get(point.y);
-				percorrerArvore(arvore, inicialCorpus);
+				retorno = percorrerArvore(arvore, inicialCorpus);
 			}
-
 		}
+		return retorno;
 	}
 
-	private void percorrerArvore(DefaultMutableTreeNode df, Estado estado) {
-		String raiz = df.toString();
-		
-		if(estado.regra.tipo == Regra.LEXICO){
-//			return 
-		}
-		for(LinkedHashSet<Point> lista : estado.backPointers){
-			for (Point point : lista) {
-//				montarArvore(chart[point.x].get(point.y));
+	private boolean percorrerArvore(DefaultMutableTreeNode arvore, Estado estado) {
+		boolean retorno = false;
+		String raiz = arvore.toString();
+//    	System.out.println(String.format("Ra:    %s",raiz.toString().trim()));
+    	if(estado.regra.tipo != Regra.LEXICO){
+	    	ArrayList<LinkedHashSet<Point>> pointers = estado.backPointers;
+	    	for (int i = 0; i < pointers.size(); i++) {
+	    		LinkedHashSet<Point> listaPointers = pointers.get(i);
+	    		for (Point point : listaPointers) {
+	    			Estado proximoEstado = chart[point.x].get(point.y);
+	    			// se a quantidade de elementos mais a direita for igual a de filhos deste no
+	    			if(proximoEstado.regra.direita.size() == arvore.getChildCount()){
+	    				Enumeration<DefaultMutableTreeNode> e = ((Enumeration<DefaultMutableTreeNode>)arvore.children());
+	    				ArrayList<Elemento> filhos = new ArrayList<Elemento>();
+				    	while(e.hasMoreElements()){
+					        DefaultMutableTreeNode filho = e.nextElement();
+					        filhos.add(new Elemento(filho.toString()));
+				    	}
+				    	// se os elementos a direita da regra sao iguais aos dos filhos deste no
+				    	if(filhos.equals(proximoEstado.regra.direita)){
+				    		boolean aux = false;
+				    		e = ((Enumeration<DefaultMutableTreeNode>)arvore.children());
+					    	while(e.hasMoreElements()){
+						        DefaultMutableTreeNode filho = e.nextElement();
+						        aux = percorrerArvore(filho, proximoEstado);
+						        if(!aux){
+						        	break;
+						        }else{
+						        	retorno = true;
+						        }
+					    	}	
+//				    		System.out.println("Mesmo elementos");
+//		    				System.out.println(String.format("arvore: %s",filhos));
+//		    				System.out.println(String.format("estado: %s",proximoEstado.regra.direita));
+				    	}
+	    			}else{
+	//    		    	System.out.println("Estado size =" + estado.regra.direita.size());
+	//    		    	System.out.println("Aravore size =" +arvore.getChildCount());
+	//    		    	System.out.println("Estado Raiz: "+proximoEstado);    				
+	    			}
+				}
+			}
+    	}else{
+			if(estado.regra.direita.get(0).valor.equals(raiz)){
+//				System.out.println(raiz);
+//				System.out.println(estado);
+				retorno = true;
 			}
 		}
+    	
+    	return retorno;
+//    	// PERCORRER TODA A ARVORE
+//    	Enumeration<DefaultMutableTreeNode> e = ((Enumeration<DefaultMutableTreeNode>)arvore.children());
+//    	while(e.hasMoreElements()){
+//	        DefaultMutableTreeNode filho = e.nextElement();
+//	        if(!filho.isLeaf()){
+//	        	System.out.println(String.format("No:    %s",filho.toString().trim()));
+//	        	Point point = ((Point)estado.backPointers.get(0).toArray()[0]);
+//				Estado proximoEstado = chart[point.x].get(point.y);
+//	        	System.out.println(String.format("EstNo: %s",proximoEstado.regra));
+//	        	System.out.println("-------------------");
+//	        	percorrerArvore(filho, proximoEstado);
+//	        }else{
+//	        	System.out.println(String.format("Folh:  %s",filho.toString().trim()));
+//	        	System.out.println(String.format("EFolh: %s",estado.regra));
+//	        	System.out.println("-------------------");
+//	        }
+//		}
 	}
 
 	public boolean parser(LinkedHashMap<String, LinkedHashSet<Regra>> gramatica, ArrayList<Regra> sentenca){
@@ -236,7 +301,7 @@ public class Earley {
 //							System.out.println("$$$");
 //						}
 //						if(novoEstado==null ? e==null : novoEstado.equals(e)){
-//							System.out.println("$$$hjhdjehjdhejdhjehd");
+//							System.out.println("asdf");
 //						}
 //					}
 //				}
