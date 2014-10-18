@@ -11,6 +11,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -43,11 +44,19 @@ public class ManipulaCorpus implements Serializable{
 			// varre os caracteres do corpus criando uma árvore para cada sentença
 			listaArvoresSintaticas = converterCorpusEmArvore(sb);
 
+			java.util.Collections.sort(listaArvoresSintaticas, new ArvoreComparator());
+			
 			// lista com árvores sintáticas inconsistentes (sujeira do corpus, eg. VB -> VB terminal)
 			LinkedHashSet<DefaultMutableTreeNode> listaArvoresInconsistentes = new LinkedHashSet<DefaultMutableTreeNode>();
 
+			// lista com 80% das sentencas para gerar a gramatica
+			ArrayList<DefaultMutableTreeNode> listaTreinamento = new ArrayList<DefaultMutableTreeNode>();
+			for (int i = (int)(listaArvoresSintaticas.size()*0.2); i < listaArvoresSintaticas.size(); i++) {
+				listaTreinamento.add(listaArvoresSintaticas.get(i));
+			}
+			
 			// elimina regras redundantes mantendo a ordem de inserção das regras
-			regras = removerRedundancia(listaArvoresSintaticas, listaArvoresInconsistentes);
+			regras = removerRedundancia(listaTreinamento, listaArvoresInconsistentes);
 
 			// elimina árvores sintáticas inconsistentes
 			for (DefaultMutableTreeNode df : listaArvoresInconsistentes) {
@@ -205,30 +214,32 @@ public class ManipulaCorpus implements Serializable{
     /**
 	 * cria interfaca gráfica JTree para cada árvore sintatica
 	 */
-	private static void imprimirArvore(DefaultMutableTreeNode raiz) {
+	public static void imprimirArvore(DefaultMutableTreeNode raiz) {
 //		// arvore de teste
-//		DefaultMutableTreeNode s = new DefaultMutableTreeNode("S");
-//		DefaultMutableTreeNode vp = new DefaultMutableTreeNode("VP");
-//		DefaultMutableTreeNode np = new DefaultMutableTreeNode("NP");
-//		DefaultMutableTreeNode verb = new DefaultMutableTreeNode("Verb");
-//		DefaultMutableTreeNode book = new DefaultMutableTreeNode("book");
-//		DefaultMutableTreeNode det = new DefaultMutableTreeNode("Det");
-//		DefaultMutableTreeNode that = new DefaultMutableTreeNode("that");
-//		DefaultMutableTreeNode nominal = new DefaultMutableTreeNode("Nominal");
-//		DefaultMutableTreeNode noun = new DefaultMutableTreeNode("Noun");
-//		DefaultMutableTreeNode flight = new DefaultMutableTreeNode("flight");
-//		
-//		s.add(vp);
-//		vp.add(verb);
-//		vp.add(np);
-//		verb.add(book);
-//		np.add(det);
-//		det.add(that);
-//		np.add(nominal);
-//		nominal.add(noun);
-//		noun.add(flight);
-//		
-//		raiz = s;
+		DefaultMutableTreeNode s = new DefaultMutableTreeNode("S");
+		DefaultMutableTreeNode vp = new DefaultMutableTreeNode("VP");
+		DefaultMutableTreeNode np = new DefaultMutableTreeNode("NP");
+		DefaultMutableTreeNode verb = new DefaultMutableTreeNode("Verb");
+		DefaultMutableTreeNode book = new DefaultMutableTreeNode("book");
+		DefaultMutableTreeNode det = new DefaultMutableTreeNode("Det");
+		DefaultMutableTreeNode that = new DefaultMutableTreeNode("that");
+		DefaultMutableTreeNode nominal = new DefaultMutableTreeNode("Nominal");
+		DefaultMutableTreeNode noun = new DefaultMutableTreeNode("Noun");
+		DefaultMutableTreeNode flight = new DefaultMutableTreeNode("flight");
+		
+		s.add(vp);
+		vp.add(verb);
+		vp.add(np);
+		verb.add(book);
+		np.add(det);
+		det.add(that);
+		np.add(nominal);
+		nominal.add(noun);
+		noun.add(flight);
+		noun.add(book);
+		noun.add(that);
+
+		raiz = s;
 
 		JTree tree = new JTree(raiz);
 		JFrame j = new JFrame();
@@ -426,6 +437,13 @@ public class ManipulaCorpus implements Serializable{
 		corpus = corpus.replaceAll("(\\$|\\+|\\/)","X");
 		sb = new StringBuffer(corpus);
 		return sb;
+	}
+
+	class ArvoreComparator implements Comparator<DefaultMutableTreeNode>{
+	    @Override
+	    public int compare(DefaultMutableTreeNode s1, DefaultMutableTreeNode s2) {
+	    	return s1.getLeafCount() - s2.getLeafCount();
+	    }
 	}
 
 }

@@ -12,9 +12,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-
 import javax.swing.tree.DefaultMutableTreeNode;
-
 
 /* 
  * O Earley Parser recebe como entrada uma gramática (GLC) e uma sentença a ser analisada, retornando verdadeiro caso a sentença seja derivada pela gramática, ou falso caso contrário. Para isso, o algoritmo utiliza uma lista denominada chart, com tamanho igual ao número de palavras da sentença mais um; onde cada elemento do chart guarda uma lista de estados. Um estado pode ser representado por (X -> u • v , [i,j]). Ou seja, ele é composto de três partes: a regra em análise (X -> uv); a posição do ponto que indica qual elemento da regra já foi reconhecido; e, um índice que indica a qual parte da constituinte já fori reconhecida.
@@ -38,7 +36,7 @@ public class Earley {
 //	    long tempoInicial = System.currentTimeMillis();  
 //	    obterGramatica("aires-treino.parsed");
 //	    obterGramatica("corpus-pequeno");
-	    obterGramatica("corpus-livro");
+//	    obterGramatica("corpus-livro");
 //		long tempoFinal = System.currentTimeMillis();  
 //	    System.out.println(String.format("Tempo: %d segundos.", (tempoFinal - tempoInicial)/1000));  
 
@@ -52,22 +50,29 @@ public class Earley {
 //			gravarChart(contador);
 //		}
 	    
-	    int indice = 4;
-	    DefaultMutableTreeNode arvore = listaArvoresSintaticas.get(indice);
-	    System.out.println(sentencas.size());
-	    ArrayList<Regra> sentenca = sentencas.get(indice);
-	    System.out.println(gramatica);
-	    System.out.println("Sentenca = " + sentenca);
-	    System.out.println("Sentenca reconhecida pelo parser = " + parser(gramatica, sentenca));
-	    System.out.println("Arvore validada = " + validarArvoreSintatica(arvore, sentenca));
-
+// DEBUG: validacao do parser
+//	    ArrayList<Regra> sentenca = sentencas.get(0);	    
+//	    System.out.println(gramatica);
+//	    System.out.println("Sentenca = " + sentenca);
+//	    System.out.println("Sentenca reconhecida pelo parser = " + parser(gramatica, sentenca));
+//	    System.out.println("Arvore validada = " + validarArvoreSintatica(arvore, sentenca.size()));
 //		imprimirChart();
 
+//	    int indice = 4;
+//	    DefaultMutableTreeNode arvore = listaArvoresSintaticas.get(indice);
+//	    System.out.println(sentencas.size());
+//	    ArrayList<Regra> sentenca = sentencas.get(indice);
+	    
 	}
 	
-	public boolean validarArvoreSintatica(DefaultMutableTreeNode arvore, ArrayList<Regra> sentenca) {
+	/**
+	 * Recupera o backpointer do estado DummyState, para posteriormente percorrer a árvore original
+	 * @param arvore original da sentenca
+	 * @param tamanhoSentenca
+	 * @return verdadeiro caso a árvore verificada tenha sido gerada pelo chart, e falso caso contrário
+	 */
+	public boolean validarArvoreSintatica(DefaultMutableTreeNode arvore, int tamanhoSentenca) {
 		boolean retorno = false;
-		int tamanhoSentenca = sentenca.size();
 		for (int i = 0; i < chart[chart.length-1].size(); i++) {
 			Estado estado = chart[chart.length-1].get(i);
 			if(estado.regra.variavel.equals(REGRA_INICIAL) 
@@ -77,18 +82,21 @@ public class Earley {
 					&& estado.i == 0 && estado.j == tamanhoSentenca){
 				Point point = ((Point)estado.backPointers.get(0).toArray()[0]);
 				Estado inicialCorpus = chart[point.x].get(point.y);
-//				point = ((Point)inicialCorpus.backPointers.get(0).toArray()[0]);
-//				Estado inicialGramatica = chart[point.x].get(point.y);
 				retorno = percorrerArvore(arvore, inicialCorpus);
 			}
 		}
 		return retorno;
 	}
 
+	/**
+	 * Verifica a correspondencia entre cada nível da árvore original, com os elementos recuperados pelos backpointers 
+	 * @param arvore original da sentenca
+	 * @param estado contendo backpointers a serem percorridos
+	 * @return verdadeiro caso a árvore verificada tenha sido gerada pelo chart, e falso caso contrário
+	 */
 	private boolean percorrerArvore(DefaultMutableTreeNode arvore, Estado estado) {
 		boolean retorno = false;
 		String raiz = arvore.toString();
-//    	System.out.println(String.format("Ra:    %s",raiz.toString().trim()));
     	if(estado.regra.tipo != Regra.LEXICO){
 	    	ArrayList<LinkedHashSet<Point>> pointers = estado.backPointers;
 	    	for (int i = 0; i < pointers.size(); i++) {
@@ -116,27 +124,19 @@ public class Earley {
 						        	retorno = true;
 						        }
 					    	}	
-//				    		System.out.println("Mesmo elementos");
-//		    				System.out.println(String.format("arvore: %s",filhos));
-//		    				System.out.println(String.format("estado: %s",proximoEstado.regra.direita));
 				    	}
-	    			}else{
-	//    		    	System.out.println("Estado size =" + estado.regra.direita.size());
-	//    		    	System.out.println("Aravore size =" +arvore.getChildCount());
-	//    		    	System.out.println("Estado Raiz: "+proximoEstado);    				
 	    			}
 				}
 			}
     	}else{
 			if(estado.regra.direita.get(0).valor.equals(raiz)){
-//				System.out.println(raiz);
-//				System.out.println(estado);
 				retorno = true;
 			}
 		}
     	
     	return retorno;
-//    	// PERCORRER TODA A ARVORE
+
+// DEBUG: PERCORRER TODA A ARVORE
 //    	Enumeration<DefaultMutableTreeNode> e = ((Enumeration<DefaultMutableTreeNode>)arvore.children());
 //    	while(e.hasMoreElements()){
 //	        DefaultMutableTreeNode filho = e.nextElement();
@@ -157,18 +157,19 @@ public class Earley {
 
 	public boolean parser(LinkedHashMap<String, LinkedHashSet<Regra>> gramatica, ArrayList<Regra> sentenca){
 		boolean reconheceu = false;
+		
 		// cria novas possições no chart, uma para cada palavra da sentenca
 		chart  = new ArrayList[sentenca.size()+1];
 		for (int i = 0; i < sentenca.size()+1; i++) {
 			chart[i] = new ArrayList<Estado>();
 		}
 
-		// adiciona estado S(0) ao chart
+		// adiciona estado "Dummy start state" S(0) ao chart
 		Regra novaRegra = new Regra(Regra.NAO_LEXICO, REGRA_INICIAL, ManipulaCorpus.REGRA_INICIAL_CORPUS);
 		Estado novoEstado = new Estado(novaRegra, 0, 0, 0, "Dummy start state");
 		enfileirar(novoEstado, chart[0]);
 
-		// para cada palavra da sentenca
+		// para cada palavra da sentenca verifica as acoes do parser
 		for (int i = 0; i <= sentenca.size(); i++) {
 			String palavra = null;
 			int k = sentenca.size()-i-1;
@@ -194,7 +195,7 @@ public class Earley {
 				}
 			}
 		}
-		
+		// verifica se o estado que derivou a regra inicial satisfaz todas as condicoes para validar a sentenca
 		for(Estado estado : chart[sentenca.size()]){
 			if(estado.regra.variavel.equals(REGRA_INICIAL) 
 				&& estado.regra.direita.size()==1 
@@ -231,7 +232,6 @@ public class Earley {
 				}
 			}
 		}
-//		System.out.println("Predictor: " + chart);
 	}
 	
 	public void scanner(Estado estado, String palavra){
@@ -242,8 +242,8 @@ public class Earley {
 				enfileirar(novoEstado, chart[estado.j+1]);
 			}
 		}
-//		System.out.println("Scanner: " + chart);
 	}
+
 	/**
 	 * @param estado que já está completo
 	 * @param backPointer indice (i,j) do chart para o estado completo
@@ -308,13 +308,11 @@ public class Earley {
 
 			}
 		}
-//		imprimirChart();
 	}
 
-	public static void main(String[] args) {
-		new Earley();
-	}
-	
+	/**
+	 * Salva em arquivo os charts gerados após o parser. Um chart para cada sentenca. 
+	 */
 	public void gravarChart(int indice){
 		try {
 			File diretorio = new File("charts");
@@ -335,7 +333,10 @@ public class Earley {
 			e.printStackTrace();
 		}
 	}
-	
+
+	/**
+	 * impressao do estado atual do chart. Muito utilizado no DEBUG do parser.
+	 */
 	public void imprimirChart(){
 		String retorno = "";
 		if(chart!=null){
@@ -351,7 +352,10 @@ public class Earley {
 		}
 		System.out.println(retorno+"\n");
 	}
-	
+	/**
+	 * @param nomeArquivo contendo a gramática extraída do córpus e salva em um objeto serializado
+	 * Caso o arquivo não exista efetua pré-processamento do córpus para extrair sentencas e a gramatica
+	 */
 	public void obterGramatica(String nomeArquivo){
 		try {
 			File arquivo = new File(nomeArquivo+".dat");
@@ -383,4 +387,9 @@ public class Earley {
 		}
 
 	}
+	
+	public static void main(String[] args) {
+		new Earley();
+	}
+
 }
