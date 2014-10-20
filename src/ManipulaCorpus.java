@@ -34,88 +34,135 @@ public class ManipulaCorpus implements Serializable{
 	public LinkedHashSet<Regra> regras = new LinkedHashSet<Regra>();
 	public LinkedHashSet<String> lexico = new LinkedHashSet<String>();
 	public ArrayList<ArrayList<Regra>> sentencas = new ArrayList<ArrayList<Regra>>();
-	public ArrayList<DefaultMutableTreeNode> listaArvoresSintaticas = new ArrayList<DefaultMutableTreeNode>(); 
-	
+	public ArrayList<DefaultMutableTreeNode> listaSentencasCorpus = new ArrayList<DefaultMutableTreeNode>(); 
+	public ArrayList<DefaultMutableTreeNode> listaSentencasTreinamento = new ArrayList<DefaultMutableTreeNode>();
+	public ArrayList<DefaultMutableTreeNode> listaSentencasTeste = new ArrayList<DefaultMutableTreeNode>();
+
 	public void extrairRegrasESentenca(String corpus){
 		try {
 			// leitura do corpus para a memoria
 			StringBuffer sb = suavizarCorpus(corpus);
 
 			// varre os caracteres do corpus criando uma árvore para cada sentença
-			listaArvoresSintaticas = converterCorpusEmArvore(sb);
+			listaSentencasCorpus = converterCorpusEmArvore(sb);
 
-			java.util.Collections.sort(listaArvoresSintaticas, new ArvoreComparator());
+			// lista com árvores sintáticas inconsistentes (sujeira do corpus, eg. VB -> VB terminal)
+			LinkedHashSet<DefaultMutableTreeNode> listaArvoresInconsistentes = new LinkedHashSet<DefaultMutableTreeNode>();
+
+			// elimina regras redundantes mantendo a ordem de inserção das regras
+			regras = removerRedundancia(listaSentencasCorpus, listaArvoresInconsistentes);
+
+			// elimina sentencas com regras inconsistentes da lista de treinamento
+			for (DefaultMutableTreeNode df : listaArvoresInconsistentes) {
+				listaSentencasCorpus.remove(df);
+			}
+			 
+			// constroi gramática a partir do conjunto de regras tratadas
+		   	extrairGramatica(regras);
+		   	
+		   	// agrupa as sentencas em uma lista de regras do tipo Lexico
+			sentencas = extrairSentencas(listaSentencasCorpus);
+
+			
+//			System.out.println("Tamanho lista corpus: " + listaSentencascorpus.size());
+//			System.out.println("Tamanho lista teste: " + listaSentencasTeste.size());
+//			System.out.println("Tamanho lista treinamento: " + listaSentencasTreinamento.size());
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void extrairRegrasESentenca(String corpus, double percentualTreinamento, double percentualTeste){
+		try {
+			// leitura do corpus para a memoria
+			StringBuffer sb = suavizarCorpus(corpus);
+
+			// varre os caracteres do corpus criando uma árvore para cada sentença
+			listaSentencasCorpus = converterCorpusEmArvore(sb);
+
+			// ordena as sentencas por ordem crescente na quantidade de palavras
+			java.util.Collections.sort(listaSentencasCorpus, new ArvoreComparator());
 			
 			// lista com árvores sintáticas inconsistentes (sujeira do corpus, eg. VB -> VB terminal)
 			LinkedHashSet<DefaultMutableTreeNode> listaArvoresInconsistentes = new LinkedHashSet<DefaultMutableTreeNode>();
 
-			// lista com 80% das sentencas para gerar a gramatica
-			ArrayList<DefaultMutableTreeNode> listaTreinamento = new ArrayList<DefaultMutableTreeNode>();
-			for (int i = (int)(listaArvoresSintaticas.size()*0.2); i < listaArvoresSintaticas.size(); i++) {
-				listaTreinamento.add(listaArvoresSintaticas.get(i));
+			// lista com 80% das sentencas para treinamento da gramatica
+			listaSentencasTreinamento = new ArrayList<DefaultMutableTreeNode>();
+			
+			// lista com 20% das sentencas para teste
+			listaSentencasTeste = new ArrayList<DefaultMutableTreeNode>();
+			
+			// inicializar listas de teste e treinamento a partir do corpus.
+			for (int i = (int)(listaSentencasCorpus.size()*percentualTeste), j = 0; i < listaSentencasCorpus.size(); i++, j++) {
+				listaSentencasTreinamento.add(listaSentencasCorpus.get(i));
+				if(j<(int)(listaSentencasCorpus.size()*percentualTeste)){
+					listaSentencasTeste.add(listaSentencasCorpus.get(j));
+				}
 			}
 			
 			// elimina regras redundantes mantendo a ordem de inserção das regras
-			regras = removerRedundancia(listaTreinamento, listaArvoresInconsistentes);
+			regras = removerRedundancia(listaSentencasTreinamento, listaArvoresInconsistentes);
 
-			// elimina árvores sintáticas inconsistentes
+			// elimina sentencas com regras inconsistentes da lista de treinamento
 			for (DefaultMutableTreeNode df : listaArvoresInconsistentes) {
-				listaArvoresSintaticas.remove(df);
+				listaSentencasTreinamento.remove(df);
 			}
-
+			 
+			// eliminar sentenças com regras inconsistentes da lista de teste
+			listaArvoresInconsistentes = new LinkedHashSet<DefaultMutableTreeNode>();
+			removerRedundancia(listaSentencasTeste, listaArvoresInconsistentes);
+			for (DefaultMutableTreeNode df : listaArvoresInconsistentes) {
+				listaSentencasTeste.remove(df);
+			}
+			
 			// constroi gramática a partir do conjunto de regras tratadas
-		   	for (Regra r : regras) {
-				String cabeca = r.variavel;
-				if(gramatica.containsKey(cabeca)){
-					gramatica.get(cabeca).add(r);
-				}else{
-					LinkedHashSet<Regra> l = new LinkedHashSet<Regra>();
-					l.add(r);
-					gramatica.put(cabeca, l);	
-				}
-		    }
+		   	extrairGramatica(regras);
 		   	
 		   	// agrupa as sentencas em uma lista de regras do tipo Lexico
-			sentencas = extrairSentencas(listaArvoresSintaticas);
+			sentencas = extrairSentencas(listaSentencasTeste);
+
 			
+//			System.out.println("Tamanho lista corpus: " + listaSentencascorpus.size());
+//			System.out.println("Tamanho lista teste: " + listaSentencasTeste.size());
+//			System.out.println("Tamanho lista treinamento: " + listaSentencasTreinamento.size());
+
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * constroi a gramática a partir do conjunto de regras tratadas onde a chave é a variavel mais a esquerda, 
+	 * os valores são todas as regras que iniciam com a chave, respeitando a ordem de inserção, 
+	 */
+	public void extrairGramatica(LinkedHashSet<Regra> regras) {
+		for (Regra r : regras) {
+			String cabeca = r.variavel;
+			if(gramatica.containsKey(cabeca)){
+				gramatica.get(cabeca).add(r);
+			}else{
+				LinkedHashSet<Regra> l = new LinkedHashSet<Regra>();
+				l.add(r);
+				gramatica.put(cabeca, l);	
+			}
 		}
 	}
 	
 	public static void main(String[] args) {
 		try {
 			ManipulaCorpus manipula = new ManipulaCorpus();
-			// leitura do corpus para a memoria
-			StringBuffer sb = suavizarCorpus("aires-treino.parsed");
-//			StringBuffer sb = suavizarCorpus("corpus.txt");
-
-			// varre os caracteres do corpus criando uma árvore para cada sentença
-			ArrayList<DefaultMutableTreeNode> listaArvoresSintaticas = converterCorpusEmArvore(sb);
-
-			// lista com árvores sintáticas inconsistentes (sujeira do corpus, eg. VB -> VB terminal)
-			LinkedHashSet<DefaultMutableTreeNode> listaArvoresInconsistentes = new LinkedHashSet<DefaultMutableTreeNode>();
-
-			// elimina regras redundantes mantendo a ordem de inserção das regras
-			LinkedHashSet<Regra> conjuntoRegrasSemRepeticao = manipula.removerRedundancia(listaArvoresSintaticas, listaArvoresInconsistentes);
-
-			System.out.println(listaArvoresSintaticas.size());
-
-			// elimina árvores sintaticas inconsistentes da listaArvoresSintaticas
-			for (DefaultMutableTreeNode df : listaArvoresInconsistentes) {
-				listaArvoresSintaticas.remove(df);
-			}
-
-			// agrupa as sentencas em uma lista de regras do tipo Lexico
-			ArrayList<ArrayList<Regra>> listaSentencas = extrairSentencas(listaArvoresSintaticas);
-			System.out.println(listaSentencas.size());
+			
+			manipula.extrairRegrasESentenca("aires-treino.parsed", 0.8, 0.2);
 			
 			// agrupa regras no formato S -> A B | C D \n A -> a
-			ArrayList<String> listaGramaticaFinal = formatarRegras(conjuntoRegrasSemRepeticao);
+			ArrayList<String> listaGramaticaFinal = formatarRegras(manipula.regras);
 
 			// cria arquivo para persistir as regras em disco
 			salvarGramaticaEmArquivo(listaGramaticaFinal);
 
+			System.out.println("Sentenca 0: " + manipula.sentencas.get(0));
+			imprimirArvore(manipula.listaSentencasTeste.get(0));
 	            
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -123,9 +170,7 @@ public class ManipulaCorpus implements Serializable{
 	}
 
 	/**
-	 * Agrupa regras em um conjunto, onde a chave é a variavel mais a esquerda, 
-	 * os valores são todas as regras que iniciam com a chave,
-	 * respeitando a ordem de inserção, eliminando regras redundantes 
+	 * Agrupa regras em um conjunto, respeitando a ordem de inserção, eliminando regras redundantes 
 	 * e inconsistentes (sujeira do corpus, eg. VB -> VB terminal)
 	 */
 	private LinkedHashSet<Regra>  removerRedundancia(ArrayList<DefaultMutableTreeNode> listaArvoresSintaticas, LinkedHashSet<DefaultMutableTreeNode> listaArvoresInconsistentes) {
@@ -216,30 +261,30 @@ public class ManipulaCorpus implements Serializable{
 	 */
 	public static void imprimirArvore(DefaultMutableTreeNode raiz) {
 //		// arvore de teste
-		DefaultMutableTreeNode s = new DefaultMutableTreeNode("S");
-		DefaultMutableTreeNode vp = new DefaultMutableTreeNode("VP");
-		DefaultMutableTreeNode np = new DefaultMutableTreeNode("NP");
-		DefaultMutableTreeNode verb = new DefaultMutableTreeNode("Verb");
-		DefaultMutableTreeNode book = new DefaultMutableTreeNode("book");
-		DefaultMutableTreeNode det = new DefaultMutableTreeNode("Det");
-		DefaultMutableTreeNode that = new DefaultMutableTreeNode("that");
-		DefaultMutableTreeNode nominal = new DefaultMutableTreeNode("Nominal");
-		DefaultMutableTreeNode noun = new DefaultMutableTreeNode("Noun");
-		DefaultMutableTreeNode flight = new DefaultMutableTreeNode("flight");
-		
-		s.add(vp);
-		vp.add(verb);
-		vp.add(np);
-		verb.add(book);
-		np.add(det);
-		det.add(that);
-		np.add(nominal);
-		nominal.add(noun);
-		noun.add(flight);
-		noun.add(book);
-		noun.add(that);
-
-		raiz = s;
+//		DefaultMutableTreeNode s = new DefaultMutableTreeNode("S");
+//		DefaultMutableTreeNode vp = new DefaultMutableTreeNode("VP");
+//		DefaultMutableTreeNode np = new DefaultMutableTreeNode("NP");
+//		DefaultMutableTreeNode verb = new DefaultMutableTreeNode("Verb");
+//		DefaultMutableTreeNode book = new DefaultMutableTreeNode("book");
+//		DefaultMutableTreeNode det = new DefaultMutableTreeNode("Det");
+//		DefaultMutableTreeNode that = new DefaultMutableTreeNode("that");
+//		DefaultMutableTreeNode nominal = new DefaultMutableTreeNode("Nominal");
+//		DefaultMutableTreeNode noun = new DefaultMutableTreeNode("Noun");
+//		DefaultMutableTreeNode flight = new DefaultMutableTreeNode("flight");
+//		
+//		s.add(vp);
+//		vp.add(verb);
+//		vp.add(np);
+//		verb.add(book);
+//		np.add(det);
+//		det.add(that);
+//		np.add(nominal);
+//		nominal.add(noun);
+//		noun.add(flight);
+//		noun.add(book);
+//		noun.add(that);
+//
+//		raiz = s;
 
 		JTree tree = new JTree(raiz);
 		JFrame j = new JFrame();
@@ -422,7 +467,7 @@ public class ManipulaCorpus implements Serializable{
 	}
 
 	/**
-	 * suavisa o corpus para uma unica linha com um unico espaco em branco separando os termos
+	 * suaviza o corpus para uma unica linha com um unico espaco em branco separando os termos
 	 */
 	private static StringBuffer suavizarCorpus(String nomeArquivo) throws FileNotFoundException, IOException {
 		StringBuffer sb = new StringBuffer();

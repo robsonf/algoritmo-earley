@@ -28,15 +28,16 @@ public class Earley {
 	ArrayList<Estado> [] chart = null;
 	LinkedHashSet<String> lexico = null;
 	LinkedHashMap<String, LinkedHashSet<Regra>> gramatica = null;
-	ArrayList<ArrayList<Regra>> sentencas = null;
-	ArrayList<DefaultMutableTreeNode> listaArvoresSintaticas = null;
+	public ArrayList<DefaultMutableTreeNode> listaSentencasCorpus = new ArrayList<DefaultMutableTreeNode>(); 
+	public ArrayList<DefaultMutableTreeNode> listaSentencasTeste = new ArrayList<DefaultMutableTreeNode>();
+	public ArrayList<ArrayList<Regra>> sentencas = new ArrayList<ArrayList<Regra>>();
 	int contador = 0;
 	
 	public Earley() {
 //	    long tempoInicial = System.currentTimeMillis();  
-//	    obterGramatica("aires-treino.parsed");
-//	    obterGramatica("corpus-pequeno");
-//	    obterGramatica("corpus-livro");
+//	    extrairGramaticaESentencas("aires-treino.parsed", 0.8, 0.1);
+//	    extrairGramaticaESentencas("corpus-pequeno");
+//	    extrairGramaticaESentencas("corpus-livro");
 //		long tempoFinal = System.currentTimeMillis();  
 //	    System.out.println(String.format("Tempo: %d segundos.", (tempoFinal - tempoInicial)/1000));  
 
@@ -51,17 +52,15 @@ public class Earley {
 //		}
 	    
 // DEBUG: validacao do parser
-//	    ArrayList<Regra> sentenca = sentencas.get(0);	    
-//	    System.out.println(gramatica);
+//	    int indice = 0;
+//	    DefaultMutableTreeNode arvore = listaSentencasTeste.get(indice);
+//		ArrayList<Regra> sentenca = sentencas.get(indice);	    
 //	    System.out.println("Sentenca = " + sentenca);
 //	    System.out.println("Sentenca reconhecida pelo parser = " + parser(gramatica, sentenca));
 //	    System.out.println("Arvore validada = " + validarArvoreSintatica(arvore, sentenca.size()));
-//		imprimirChart();
 
-//	    int indice = 4;
-//	    DefaultMutableTreeNode arvore = listaArvoresSintaticas.get(indice);
-//	    System.out.println(sentencas.size());
-//	    ArrayList<Regra> sentenca = sentencas.get(indice);
+//	    imprimirChart();
+
 	    
 	}
 	
@@ -356,7 +355,7 @@ public class Earley {
 	 * @param nomeArquivo contendo a gramática extraída do córpus e salva em um objeto serializado
 	 * Caso o arquivo não exista efetua pré-processamento do córpus para extrair sentencas e a gramatica
 	 */
-	public void obterGramatica(String nomeArquivo){
+	public void extrairGramaticaESentencas(String nomeArquivo, double treinamento, double teste){
 		try {
 			File arquivo = new File(nomeArquivo+".dat");
 			if(arquivo.exists()){
@@ -364,16 +363,18 @@ public class Earley {
 				ManipulaCorpus objetoSerializado = (ManipulaCorpus) ois.readObject();
 				gramatica = objetoSerializado.gramatica;
 				lexico = objetoSerializado.lexico;
+				listaSentencasTeste = objetoSerializado.listaSentencasTeste;
+				listaSentencasCorpus = objetoSerializado.listaSentencasCorpus; 
 				sentencas = objetoSerializado.sentencas;
-				listaArvoresSintaticas = objetoSerializado.listaArvoresSintaticas; 
 				ois.close();
 			}else{
 				ManipulaCorpus manipula = new ManipulaCorpus();
-				manipula.extrairRegrasESentenca(nomeArquivo);
+				manipula.extrairRegrasESentenca(nomeArquivo, treinamento, teste);
 				gramatica = manipula.gramatica;
 				lexico = manipula.lexico;
-				sentencas = manipula.sentencas; 
-				listaArvoresSintaticas = manipula.listaArvoresSintaticas;
+				listaSentencasTeste = manipula.listaSentencasTeste; 
+				listaSentencasCorpus = manipula.listaSentencasCorpus;
+				sentencas = manipula.sentencas;
 				ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(arquivo));
 				oos.writeObject(manipula);
 				oos.close();		
