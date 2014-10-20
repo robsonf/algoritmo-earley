@@ -15,9 +15,9 @@ public class Validacao {
 		Earley earley = new Earley();
 	    
 		long tempoInicial = System.currentTimeMillis();  
-	    earley.extrairGramaticaESentencas("aires-treino.parsed", 0.8, 0.2);
+//	    earley.extrairGramaticaESentencas("aires-treino.parsed", 0.8, 0.2);
 //	    earley.obterGramatica("corpus-pequeno");
-//	    earley.obterGramatica("corpus-livro");
+	    earley.extrairGramaticaESentencas("corpus-livro", 0.8, 0.2);
 
 	    long tempoFinal = System.currentTimeMillis();  
 //	    System.out.println(String.format("Gramatica: %d segundos.", (tempoFinal - tempoInicial)/1000));

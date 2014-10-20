@@ -388,7 +388,41 @@ public class Earley {
 		}
 
 	}
-	
+
+	public void extrairGramaticaESentencas(String nomeArquivo){
+		try {
+			File arquivo = new File(nomeArquivo+".dat");
+			if(arquivo.exists()){
+				ObjectInputStream ois = new ObjectInputStream(new FileInputStream(arquivo));
+				ManipulaCorpus objetoSerializado = (ManipulaCorpus) ois.readObject();
+				gramatica = objetoSerializado.gramatica;
+				lexico = objetoSerializado.lexico;
+				listaSentencasTeste = objetoSerializado.listaSentencasTeste;
+				listaSentencasCorpus = objetoSerializado.listaSentencasCorpus; 
+				sentencas = objetoSerializado.sentencas;
+				ois.close();
+			}else{
+				ManipulaCorpus manipula = new ManipulaCorpus();
+				manipula.extrairRegrasESentenca(nomeArquivo);
+				gramatica = manipula.gramatica;
+				lexico = manipula.lexico;
+				listaSentencasTeste = manipula.listaSentencasTeste; 
+				listaSentencasCorpus = manipula.listaSentencasCorpus;
+				sentencas = manipula.sentencas;
+				ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(arquivo));
+				oos.writeObject(manipula);
+				oos.close();		
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+
+	}
+
 	public static void main(String[] args) {
 		new Earley();
 	}
