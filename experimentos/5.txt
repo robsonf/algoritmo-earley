@@ -1,8 +1,0 @@
-
-Sentenca [5] = [PONT       -> [;]            , VB         -> [respeita-se]  , CONJ       -> [e]            ]
-Sentenca reconhecida pelo parser = false
-contadorCobertura = 0
-Parser Tempo: 29 segundos.
-Arvore validada = false
-contadorPrecisao = 0
-Arvore Tempo: 0 segundos.

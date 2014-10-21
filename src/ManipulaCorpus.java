@@ -62,7 +62,6 @@ public class ManipulaCorpus implements Serializable{
 		   	
 		   	// agrupa as sentencas em uma lista de regras do tipo Lexico
 			sentencas = extrairSentencas(listaSentencasCorpus);
-
 			
 //			System.out.println("Tamanho lista corpus: " + listaSentencascorpus.size());
 //			System.out.println("Tamanho lista teste: " + listaSentencasTeste.size());

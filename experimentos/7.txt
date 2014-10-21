@@ -1,8 +1,0 @@
-
-Sentenca [7] = [VIRG       -> [,]            , VB         -> [mudar]        , VB         -> [queremos]     ]
-Sentenca reconhecida pelo parser = true
-contadorCobertura = 2
-Parser Tempo: 67 segundos.
-Arvore validada = true
-contadorPrecisao = 1
-Arvore Tempo: 0 segundos.
