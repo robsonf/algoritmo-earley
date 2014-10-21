@@ -34,12 +34,12 @@ public class Earley {
 	int contador = 0;
 	
 	public Earley() {
-	    long tempoInicial = System.currentTimeMillis();  
-	    extrairGramaticaESentencas("aires-treino.parsed", 0.8, 0.2);
+//	    long tempoInicial = System.currentTimeMillis();  
+//	    extrairGramaticaESentencas("aires-treino.parsed", 0.8, 0.2);
 //	    extrairGramaticaESentencas("corpus-pequeno");
 //	    extrairGramaticaESentencas("corpus-livro");
-		long tempoFinal = System.currentTimeMillis();  
-	    System.out.println(String.format("Tempo: %d segundos.", (tempoFinal - tempoInicial)/1000));  
+//		long tempoFinal = System.currentTimeMillis();  
+//	    System.out.println(String.format("Tempo: %d segundos.", (tempoFinal - tempoInicial)/1000));  
 
 //		for (ArrayList<Regra> sentenca: sentencas) {
 //		    tempoInicial = System.currentTimeMillis(); 

@@ -1,0 +1,8 @@
+
+Sentenca [1] = [VIRG       -> [,]            , VB         -> [d�o]          ]
+Sentenca reconhecida pelo parser = false
+contadorCobertura = 0
+Parser Tempo: 41 segundos.
+Arvore validada = false
+contadorPrecisao = 0
+Arvore Tempo: 0 segundos.

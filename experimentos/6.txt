@@ -1,0 +1,8 @@
+
+Sentenca [6] = [PONT       -> [;]            , SR         -> [ser�]         , ADV        -> [assim]        ]
+Sentenca reconhecida pelo parser = true
+contadorCobertura = 1
+Parser Tempo: 60 segundos.
+Arvore validada = false
+contadorPrecisao = 0
+Arvore Tempo: 0 segundos.

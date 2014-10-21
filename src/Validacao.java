@@ -15,26 +15,26 @@ public class Validacao {
 		Earley earley = new Earley();
 	    
 		long tempoInicial = System.currentTimeMillis();  
-	    earley.extrairGramaticaESentencas("aires-treino.parsed", 0.8, 0.2);
+	    earley.extrairGramaticaESentencas("aires-treino.parsed", 0.9, 0.1);
 //	    earley.obterGramatica("corpus-pequeno");
 //	    earley.extrairGramaticaESentencas("corpus-livro", 0.8, 0.2);
 
 	    long tempoFinal = System.currentTimeMillis();  
-//	    System.out.println(String.format("Gramatica: %d segundos.", (tempoFinal - tempoInicial)/1000));
+	    System.out.println(String.format("Gramatica: %d segundos.", (tempoFinal - tempoInicial)/1000));
 		log += ("\n" + String.format("Gramatica: %d segundos.", (tempoFinal - tempoInicial)/1000));
 
 		
 		int contadorCobertura = 0, contadorPrecisao = 0;
-		int quantidadeSentencas = (int)(earley.listaSentencasCorpus.size()*0.2);
+		int quantidadeSentencas = (int)(earley.listaSentencasCorpus.size()*0.1);
 
 		log += ("\n Quantidade de sentencas: " + quantidadeSentencas);
-		gravarExperimento(log, 1000);
+		gravarExperimento(log, "inicio");
 		
 		for (int i = 0; i < quantidadeSentencas; i++) {
 			boolean validaParser = false, validaArvore = false;
 	    	DefaultMutableTreeNode arvore = earley.listaSentencasTeste.get(i);
 		    ArrayList<Regra> sentenca = earley.sentencas.get(i);
-		    log += ("\n" + String.format("Sentenca [%d] = %s" ,i , sentenca));
+		    log = ("\n" + String.format("Sentenca [%d] = %s" ,i , sentenca));
 //		    System.out.println("Sentenca = " + sentenca);
 		    tempoInicial = System.currentTimeMillis(); 
 //		    System.out.println("Sentenca reconhecida pelo parser = " + earley.parser(earley.gramatica, sentenca));
@@ -43,6 +43,7 @@ public class Validacao {
 		    	contadorCobertura++;
 		    }
 		    log += ("\n" + "Sentenca reconhecida pelo parser = " + validaParser);
+			log += ("\n" + "contadorCobertura = " + contadorCobertura);
 			tempoFinal = System.currentTimeMillis();  
 //			System.out.println(String.format("Parser Tempo: %d segundos.", (tempoFinal - tempoInicial)/1000));
 			log += ("\n" + String.format("Parser Tempo: %d segundos.", (tempoFinal - tempoInicial)/1000));
@@ -55,6 +56,7 @@ public class Validacao {
 			    }
 			}
 			log += ("\n" + "Arvore validada = " + validaArvore);
+			log += ("\n" + "contadorPrecisao = " + contadorPrecisao);
 			tempoFinal = System.currentTimeMillis();  
 //			System.out.println(String.format("Arvore Tempo: %d segundos.", (tempoFinal - tempoInicial)/1000));
 			log += ("\n" + String.format("Arvore Tempo: %d segundos.", (tempoFinal - tempoInicial)/1000));
@@ -74,7 +76,8 @@ public class Validacao {
 	    log += ("\nContador Precisao: " + contadorPrecisao);
 	    log += ("\nQuandidade de Sentencas avaliadas: " + quantidadeSentencas);
 	    
-	    gravarExperimento(log);
+	    System.out.println(log);
+	    gravarExperimento(log, "fim");
 	}
 	
 	/**
@@ -99,13 +102,13 @@ public class Validacao {
 	/**
 	 * Salva o resultado dos experimentos em arquivo 
 	 */
-	public static void gravarExperimento(String log){
+	public static void gravarExperimento(String log, String arquivo){
 		try {
 			File diretorio = new File("experimentos");
 			if(!diretorio.exists()){
 				diretorio.mkdir();
 			}
-			BufferedWriter bw = new BufferedWriter(new FileWriter("experimentos"+File.separator+"resumo.txt"));
+			BufferedWriter bw = new BufferedWriter(new FileWriter("experimentos"+File.separator+arquivo+".txt"));
 			bw.write(log);	
 			bw.close();
 		} catch (FileNotFoundException e) {

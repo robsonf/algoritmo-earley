@@ -1,0 +1,8 @@
+
+Sentenca [0] = [VB         -> [admiramos]    , DX         -> [aquelas]      ]
+Sentenca reconhecida pelo parser = false
+contadorCobertura = 0
+Parser Tempo: 49 segundos.
+Arvore validada = false
+contadorPrecisao = 0
+Arvore Tempo: 0 segundos.
