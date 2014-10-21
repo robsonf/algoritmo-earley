@@ -34,12 +34,12 @@ public class Earley {
 	int contador = 0;
 	
 	public Earley() {
-//	    long tempoInicial = System.currentTimeMillis();  
-//	    extrairGramaticaESentencas("aires-treino.parsed", 0.8, 0.1);
+	    long tempoInicial = System.currentTimeMillis();  
+	    extrairGramaticaESentencas("aires-treino.parsed", 0.8, 0.2);
 //	    extrairGramaticaESentencas("corpus-pequeno");
 //	    extrairGramaticaESentencas("corpus-livro");
-//		long tempoFinal = System.currentTimeMillis();  
-//	    System.out.println(String.format("Tempo: %d segundos.", (tempoFinal - tempoInicial)/1000));  
+		long tempoFinal = System.currentTimeMillis();  
+	    System.out.println(String.format("Tempo: %d segundos.", (tempoFinal - tempoInicial)/1000));  
 
 //		for (ArrayList<Regra> sentenca: sentencas) {
 //		    tempoInicial = System.currentTimeMillis(); 
@@ -221,6 +221,12 @@ public class Earley {
 		}
 	}
 	
+	/**
+	 * verifica através do método \textit{HashMap.containsKey(key)} a existência na gramática (HashMap) do 
+	 * elemento analisado pelo ponto, caso exista, adiciona todas as regras do tipo não lexico, 
+	 * e que possuem a cabeça igual elemento analisado.
+	 * @param estado do elemento analisado pelo indice do ponto
+	 */
 	public void predictor(Estado estado){
 		Elemento elemento = estado.getElemento();
 		if(gramatica.containsKey(elemento.valor)){
@@ -233,6 +239,12 @@ public class Earley {
 		}
 	}
 	
+	/**
+	 * verifica se a palavra analisada pelos índices (i,j) da sentença, está contida nas regras do tipo léxico, 
+	 * adicionando um novo estado ao chart com a regra correspondente, e tornando essa regra completa (índice do ponto após o terminal).
+	 * @param estado
+	 * @param palavra
+	 */
 	public void scanner(Estado estado, String palavra){
 		String elemento = estado.getElemento().valor;
 		for(Regra regra : (LinkedHashSet<Regra>)gramatica.get(elemento)){
