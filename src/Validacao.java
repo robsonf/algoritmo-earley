@@ -64,9 +64,9 @@ public class Validacao {
 
 	    double cobertura = 0, precisao = 0;
 		if(quantidadeSentencas!=0)
-	    	cobertura = contadorCobertura / quantidadeSentencas;
+	    	cobertura = (double)contadorCobertura / quantidadeSentencas;
 		if(contadorCobertura!=0)
-		    precisao = contadorPrecisao / contadorCobertura;
+		    precisao = (double)contadorPrecisao / contadorCobertura;
 	    
 	    log = ("PRECISAO : " + precisao);
 	    log += ("\nCOBERTURA : " + cobertura);
